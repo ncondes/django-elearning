@@ -27,6 +27,18 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'posts' %}active{% endif %}" href="{% url 'accounts:posts' %}">
+                                <i class="bi bi-chat-square-text me-1"></i>My Posts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'courses' in request.resolver_match.app_name %}active{% endif %}" href="{% url 'courses:course_list' %}">
+                                <i class="bi bi-collection me-1"></i>Courses
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}

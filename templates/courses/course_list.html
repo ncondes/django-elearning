@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Courses - eLearning{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-4 mb-4">
+        {% if user.is_teacher %}
+            <!-- Teacher: My Courses -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-book me-2"></i>My Courses</h5>
+                </div>
+                <div class="card-body">
+                    {% if my_courses %}
+                        <ul class="list-unstyled mb-0">
+                            {% for course in my_courses %}
+                                <li class="mb-2">
+                                    <a href="{% url 'courses:course_detail' course.pk %}" class="text-decoration-none">
+                                        {{ course.title }}
+                                    </a>
+                                    <small class="text-muted d-block">
+                                        {{ course.enrolled_count }} enrolled
+                                    </small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">You haven't created any courses yet.</p>
+                    {% endif %}
+                    <hr>
+                    <a href="{% url 'courses:course_create' %}" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-plus-lg me-1"></i>Create Course
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Teacher: Search Users -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-search me-2"></i>Search Users</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'courses:user_search' %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-people me-1"></i>Find Students & Teachers
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <!-- Student: My Enrollments -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-journal-check me-2"></i>My Enrollments</h5>
+                </div>
+                <div class="card-body">
+                    {% if my_enrollments %}
+                        <ul class="list-unstyled mb-0">
+                            {% for enrollment in my_enrollments %}
+                                <li class="mb-2">
+                                    <a href="{% url 'courses:course_detail' enrollment.course.pk %}" class="text-decoration-none">
+                                        {{ enrollment.course.title }}
+                                    </a>
+                                    <small class="text-muted d-block">
+                                        by {{ enrollment.course.teacher.get_full_name|default:enrollment.course.teacher.username }}
+                                    </small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">You haven't enrolled in any courses yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-collection me-2"></i>All Courses</h5>
+            </div>
+            <div class="card-body">
+                <!-- Search -->
+                <form method="get" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Search courses..." value="{{ query }}">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Course List -->
+                {% if courses %}
+                    <div class="row">
+                        {% for course in courses %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <a href="{% url 'courses:course_detail' course.pk %}" class="text-decoration-none">
+                                                {{ course.title }}
+                                            </a>
+                                        </h6>
+                                        <p class="card-text small text-muted">
+                                            {{ course.description|truncatewords:20 }}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="bi bi-person me-1"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="bi bi-people me-1"></i>{{ course.enrolled_count }}
+                                            </small>
+                                        </div>
+                                        {% if course.average_rating %}
+                                            <div class="mt-2">
+                                                <small class="text-warning">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= course.average_rating %}
+                                                            <i class="bi bi-star-fill"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-star"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="text-muted ms-1">{{ course.average_rating }}</span>
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% include 'includes/pagination.html' %}
+                {% else %}
+                    <p class="text-muted text-center mb-0">
+                        {% if query %}
+                            No courses found matching "{{ query }}".
+                        {% else %}
+                            No courses available yet.
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

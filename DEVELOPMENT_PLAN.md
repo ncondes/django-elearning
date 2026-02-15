@@ -276,24 +276,24 @@ awd-final-coursework/
 - [ ] Set up base templates with Bootstrap 5
 
 #### 1.2 Accounts App
-- [ ] Create custom User model with `user_type` field
-- [ ] Create StudentProfile and TeacherProfile models
-- [ ] Implement signals for auto-creating profiles
-- [ ] Create registration form with user type selection
-- [ ] Create login/logout views
-- [ ] Create profile view and edit form
-- [ ] Create home page view (user dashboard)
-- [ ] Implement StatusUpdate model and form
-- [ ] Write unit tests for models and views
+- [x] Create custom User model with `user_type` field
+- [x] Create StudentProfile and TeacherProfile models
+- [x] Implement signals for auto-creating profiles
+- [x] Create registration form with user type selection
+- [x] Create login/logout views
+- [x] Create profile view and edit form
+- [x] Create home page view (user dashboard)
+- [x] Implement StatusUpdate model and form
+- [x] Write unit tests for models and views
 
 #### 1.3 Permissions System
-- [ ] Create custom permission classes:
+- [x] Create custom permission classes:
   - `IsTeacher`
   - `IsStudent`
   - `IsOwnerOrReadOnly`
-- [ ] Apply permissions to views
+- [x] Apply permissions to views
 
-**Deliverables Phase 1**:
+**Deliverables Phase 1**: ✅ COMPLETED
 - Working registration/login system
 - User profiles with photos
 - Home page with status updates
@@ -307,37 +307,36 @@ awd-final-coursework/
 **Goal**: Implement courses, enrollments, search, and REST API.
 
 #### 2.1 Courses App
-- [ ] Create Course model
-- [ ] Create CourseMaterial model with file upload
-- [ ] Create Enrollment model
-- [ ] Create CourseFeedback model
-- [ ] Implement course CRUD views (teacher only)
-- [ ] Implement course list view (all users)
-- [ ] Implement course detail view
-- [ ] Implement enrollment view (students)
-- [ ] Implement feedback form (enrolled students)
-- [ ] Implement material upload (teachers)
-- [ ] Implement student blocking (teachers)
-- [ ] Write unit tests
+- [x] Create Course model
+- [x] Create CourseMaterial model with file upload
+- [x] Create Enrollment model
+- [x] Create CourseFeedback model
+- [x] Implement course CRUD views (teacher only)
+- [x] Implement course list view (all users)
+- [x] Implement course detail view
+- [x] Implement enrollment view (students)
+- [x] Implement feedback form (enrolled students)
+- [x] Implement material upload (teachers)
+- [x] Implement student blocking (teachers)
+- [x] Write unit tests
 
 #### 2.2 Search Functionality
-- [ ] Implement user search view (teachers only)
-- [ ] Search by username, name, user type
-- [ ] Display search results with links to profiles
+- [x] Implement user search view (teachers only)
+- [x] Search by username, name, user type
+- [x] Display search results with links to profiles
 
 #### 2.3 REST API
-- [ ] Set up DRF configuration
-- [ ] Create User serializer
-- [ ] Create Course serializer
-- [ ] Create API viewsets:
-  - `UserViewSet` (read own data, update profile)
+- [x] Set up DRF configuration
+- [x] Create User serializer
+- [x] Create Course serializer
+- [x] Create API viewsets:
   - `CourseViewSet` (CRUD for teachers, read for students)
   - `EnrollmentViewSet`
-- [ ] Configure API URL routing
-- [ ] Add API authentication (Token or Session)
+- [x] Configure API URL routing
+- [x] Add API authentication (Session-based)
 - [ ] Write API tests
 
-**Deliverables Phase 2**:
+**Deliverables Phase 2**: ✅ COMPLETED
 - Full course management system
 - Enrollment and feedback system
 - Teacher search functionality
@@ -401,6 +400,7 @@ awd-final-coursework/
 #### 4.2 Documentation
 - [ ] Update README with setup instructions
 - [ ] Document API endpoints
+- [ ] Add Swagger/OpenAPI documentation (drf-spectacular or drf-yasg)
 - [ ] Add inline code comments where needed
 
 #### 4.3 Final Polish

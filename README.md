@@ -7,6 +7,10 @@ A Django-based eLearning platform supporting students and teachers, with course 
 - **User Authentication**: Register, login, logout with role selection (Student/Teacher)
 - **User Profiles**: View and edit profiles with bio and photo
 - **Status Updates**: Post updates to your home page
+- **Course Management**: Teachers can create/edit courses, upload materials
+- **Enrollment System**: Students can enroll in courses and leave feedback
+- **User Search**: Teachers can search for students and other teachers
+- **REST API**: Full API for courses and enrollments
 - **Responsive Design**: Bootstrap 5 with custom minimalistic styling
 
 ## Tech Stack
@@ -61,11 +65,26 @@ Visit: http://127.0.0.1:8000
 ### Seed Database
 
 ```bash
-python manage.py seed_db [--users N]
+# Standard seed (10 users, 8 courses)
+python manage.py seed_db
+
+# Custom number of users
+python manage.py seed_db --users 20
+
+# Large dataset (50 users, 20 courses, 100+ enrollments)
+python manage.py seed_db --large
 ```
 
-Options:
-- `--users N`: Number of users to create (default: 10)
+**Options:**
+- `--users N`: Number of users to create (default: 10, ignored if --large)
+- `--large`: Create a large dataset for testing pagination
+
+**What gets created:**
+
+| Mode             | Users | Courses | Enrollments | Feedback |
+|------------------|-------|---------|-------------|----------|
+| Standard         | 10    | 8       | ~20         | ~10      |
+| Large (`--large`)| 50    | 20      | 100+        | 50+      |
 
 ### Flush Database
 

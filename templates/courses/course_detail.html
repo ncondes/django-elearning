@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} - eLearning{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Sidebar -->
+    <div class="col-md-3 mb-4">
+        <!-- Back Button -->
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <a href="{% url 'courses:course_list' %}" class="text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Courses
+                </a>
+            </div>
+        </div>
+        
+        {% if is_teacher_owner %}
+            <!-- Enrolled Students (Teacher Only) -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-people me-2"></i>Enrolled Students</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% with enrollments=course.enrollments.all %}
+                        {% if enrollments %}
+                            <ul class="list-group list-group-flush">
+                                {% for enrollment in enrollments %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                        <div>
+                                            <a href="{% url 'accounts:profile' enrollment.student.username %}" class="text-decoration-none small">
+                                                {{ enrollment.student.get_full_name|default:enrollment.student.username }}
+                                            </a>
+                                            {% if enrollment.is_blocked %}
+                                                <span class="badge bg-danger ms-1">Blocked</span>
+                                            {% elif not enrollment.is_active %}
+                                                <span class="badge bg-secondary ms-1">Inactive</span>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {% if enrollment.is_blocked %}
+                                                <form method="post" action="{% url 'courses:unblock_student' course.pk enrollment.student.pk %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-success btn-sm py-0 px-1" title="Unblock">
+                                                        <i class="bi bi-unlock"></i>
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" action="{% url 'courses:block_student' course.pk enrollment.student.pk %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-1" title="Block" 
+                                                            onclick="return confirm('Block this student?')">
+                                                        <i class="bi bi-slash-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted text-center mb-0 py-3 small">No students enrolled yet.</p>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-md-9 mb-4">
+        <!-- Course Header -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ course.title }}</h5>
+                {% if is_teacher_owner %}
+                    <div>
+                        <a href="{% url 'courses:course_edit' course.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </a>
+                        <a href="{% url 'courses:course_delete' course.pk %}" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p class="mb-3">{{ course.description }}</p>
+                
+                <div class="d-flex gap-3 text-muted small mb-3">
+                    <span><i class="bi bi-person me-1"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
+                    <span><i class="bi bi-people me-1"></i>{{ course.enrolled_count }} enrolled</span>
+                    <span><i class="bi bi-calendar me-1"></i>{{ course.created_at|date:"M d, Y" }}</span>
+                </div>
+                
+                {% if course.average_rating %}
+                    <div class="mb-3">
+                        <span class="text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= course.average_rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="text-muted ms-1">{{ course.average_rating }} / 5</span>
+                    </div>
+                {% endif %}
+                
+                <!-- Enrollment Actions (Students) -->
+                {% if not user.is_teacher %}
+                    {% if enrollment %}
+                        {% if enrollment.is_blocked %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>You have been blocked from this course.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>You are enrolled in this course.
+                                <form method="post" action="{% url 'courses:unenroll' course.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">Unenroll</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <form method="post" action="{% url 'courses:enroll' course.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-1"></i>Enroll in this Course
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Course Materials -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Course Materials</h5>
+                {% if is_teacher_owner %}
+                    <a href="{% url 'courses:upload_material' course.pk %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-upload me-1"></i>Upload
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if materials %}
+                    <ul class="list-group list-group-flush">
+                        {% for material in materials %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-file-earmark me-2"></i>
+                                    {% if enrollment or is_teacher_owner %}
+                                        <a href="{{ material.file.url }}" target="_blank">{{ material.title }}</a>
+                                    {% else %}
+                                        {{ material.title }}
+                                    {% endif %}
+                                    {% if material.description %}
+                                        <small class="text-muted d-block">{{ material.description }}</small>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <small class="text-muted me-2">{{ material.uploaded_at|date:"M d" }}</small>
+                                    {% if is_teacher_owner %}
+                                        <form method="post" action="{% url 'courses:delete_material' course.pk material.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this material?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center mb-0">No materials uploaded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Feedback Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-chat-quote me-2"></i>Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% if can_edit_feedback %}
+                    <!-- Read-only view of existing review -->
+                    <div id="review-display" class="mb-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <label class="form-label text-muted mb-1">Your Review</label>
+                                <div class="mb-2">
+                                    <span class="text-warning">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= user_feedback.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                    <span class="ms-2 text-muted">({{ user_feedback.rating }}/5)</span>
+                                </div>
+                                {% if user_feedback.comment %}
+                                    <p class="mb-1">{{ user_feedback.comment }}</p>
+                                {% else %}
+                                    <p class="mb-1 text-muted fst-italic">No comment</p>
+                                {% endif %}
+                                <small class="text-muted">Last updated: {{ user_feedback.updated_at|date:"M d, Y" }}</small>
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="edit-review-btn">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit form (hidden by default) -->
+                    <form method="post" action="{% url 'courses:leave_feedback' course.pk %}" class="mb-4 d-none" id="review-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Edit Your Rating <span class="text-danger">*</span></label>
+                            <div class="rating-input">
+                                {% for value, label in feedback_form.rating.field.choices %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="rating" 
+                                               id="rating{{ value }}" value="{{ value }}"
+                                               {% if user_feedback.rating|stringformat:"s" == value %}checked{% endif %}>
+                                        <label class="form-check-label" for="rating{{ value }}">
+                                            {{ value }} <i class="bi bi-star-fill text-warning"></i>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="invalid-feedback" id="rating-error">Please select a rating (1-5 stars).</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comment (optional)</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="2" 
+                                      placeholder="Share your experience...">{{ user_feedback.comment }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-check me-1"></i>Update Review
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="cancel-edit-btn">
+                            Cancel
+                        </button>
+                    </form>
+                    <hr>
+                {% elif can_leave_feedback %}
+                    <!-- New review form -->
+                    <form method="post" action="{% url 'courses:leave_feedback' course.pk %}" class="mb-4" id="review-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Your Rating <span class="text-danger">*</span></label>
+                            <div class="rating-input">
+                                {% for value, label in feedback_form.rating.field.choices %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="rating" 
+                                               id="rating{{ value }}" value="{{ value }}">
+                                        <label class="form-check-label" for="rating{{ value }}">
+                                            {{ value }} <i class="bi bi-star-fill text-warning"></i>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="invalid-feedback" id="rating-error">Please select a rating (1-5 stars).</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comment (optional)</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="2" 
+                                      placeholder="Share your experience..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-send me-1"></i>Submit Review
+                        </button>
+                    </form>
+                    <hr>
+                {% endif %}
+                
+                {% if feedbacks %}
+                    {% for feedback in feedbacks %}
+                        <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ feedback.student.get_full_name|default:feedback.student.username }}</strong>
+                                <span class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= feedback.rating %}
+                                            <i class="bi bi-star-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                            </div>
+                            {% if feedback.comment %}
+                                <p class="mb-1 mt-2">{{ feedback.comment }}</p>
+                            {% endif %}
+                            <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center mb-0">No reviews yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Edit/Cancel toggle for existing reviews
+    const editBtn = document.getElementById('edit-review-btn');
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    const reviewDisplay = document.getElementById('review-display');
+    const reviewForm = document.getElementById('review-form');
+    
+    if (editBtn && reviewDisplay && reviewForm) {
+        editBtn.addEventListener('click', function() {
+            reviewDisplay.classList.add('d-none');
+            reviewForm.classList.remove('d-none');
+        });
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                reviewForm.classList.add('d-none');
+                reviewDisplay.classList.remove('d-none');
+            });
+        }
+    }
+    
+    // Client-side validation for rating
+    const form = document.getElementById('review-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const ratingInputs = form.querySelectorAll('input[name="rating"]');
+            const ratingError = form.querySelector('#rating-error');
+            let ratingSelected = false;
+            
+            ratingInputs.forEach(function(input) {
+                if (input.checked) {
+                    ratingSelected = true;
+                }
+            });
+            
+            if (!ratingSelected) {
+                e.preventDefault();
+                if (ratingError) {
+                    ratingError.style.display = 'block';
+                }
+                // Add visual feedback to rating section
+                const ratingDiv = form.querySelector('.rating-input');
+                if (ratingDiv) {
+                    ratingDiv.classList.add('is-invalid');
+                }
+            }
+        });
+        
+        // Clear error when a rating is selected
+        const ratingInputs = form.querySelectorAll('input[name="rating"]');
+        ratingInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                const ratingError = form.querySelector('#rating-error');
+                const ratingDiv = form.querySelector('.rating-input');
+                if (ratingError) {
+                    ratingError.style.display = 'none';
+                }
+                if (ratingDiv) {
+                    ratingDiv.classList.remove('is-invalid');
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

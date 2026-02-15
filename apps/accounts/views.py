@@ -18,11 +18,11 @@ class RegisterView(CreateView):
     model = User
     form_class = UserRegistrationForm
     template_name = 'accounts/register.html'
-    success_url = reverse_lazy('accounts:home')
+    success_url = reverse_lazy('accounts:dashboard')
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('accounts:home')
+            return redirect('accounts:dashboard')
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -57,8 +57,30 @@ class CustomLogoutView(LogoutView):
 
 @login_required
 @never_cache
-def home_view(request):
-    """User home page / dashboard."""
+def dashboard_view(request):
+    """User dashboard / landing page."""
+    user = request.user
+    from apps.courses.models import Course, Enrollment
+    
+    context = {}
+    
+    if user.is_teacher:
+        # Count total students across all courses
+        total_students = Enrollment.objects.filter(
+            course__teacher=user, is_active=True
+        ).values('student').distinct().count()
+        context['total_students'] = total_students
+    else:
+        # Count available courses for students
+        context['available_courses'] = Course.objects.filter(is_active=True).count()
+    
+    return render(request, 'accounts/dashboard.html', context)
+
+
+@login_required
+@never_cache
+def posts_view(request):
+    """User posts / status updates page."""
     user = request.user
     status_updates = user.status_updates.all()[:10]
     
@@ -69,7 +91,7 @@ def home_view(request):
             status.user = user
             status.save()
             messages.success(request, 'Status update posted!')
-            return redirect('accounts:home')
+            return redirect('accounts:posts')
     else:
         form = StatusUpdateForm()
     
@@ -77,7 +99,7 @@ def home_view(request):
         'status_updates': status_updates,
         'form': form,
     }
-    return render(request, 'accounts/home.html', context)
+    return render(request, 'accounts/posts.html', context)
 
 
 class ProfileView(DetailView):
@@ -101,7 +123,7 @@ class ProfileEditView(UpdateView):
     model = User
     form_class = UserProfileForm
     template_name = 'accounts/profile_edit.html'
-    success_url = reverse_lazy('accounts:home')
+    success_url = reverse_lazy('accounts:dashboard')
 
     def get_object(self, queryset=None):
         return self.request.user

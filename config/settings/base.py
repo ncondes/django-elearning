@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'apps.accounts',
+    'apps.courses',
 ]
 
 MIDDLEWARE = [
@@ -108,5 +109,17 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # Login/Logout URLs
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'accounts:home'
+LOGIN_REDIRECT_URL = 'accounts:dashboard'
 LOGOUT_REDIRECT_URL = 'accounts:login'
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

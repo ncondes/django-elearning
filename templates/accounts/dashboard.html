@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - eLearning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary mb-3">
+            Welcome back, {{ user.first_name|default:user.username }}!
+        </h1>
+        <p class="lead text-muted">What would you like to do today?</p>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        <!-- Posts Card -->
+        <div class="col-md-5">
+            <a href="{% url 'accounts:posts' %}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-chat-square-text display-1 text-primary"></i>
+                        </div>
+                        <h3 class="card-title text-dark">My Posts</h3>
+                        <p class="card-text text-muted">
+                            Share status updates and keep track of your activity.
+                        </p>
+                        <span class="btn btn-outline-primary mt-2">
+                            <i class="bi bi-arrow-right me-1"></i>Go to Posts
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Courses Card -->
+        <div class="col-md-5">
+            <a href="{% url 'courses:course_list' %}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-collection display-1 text-success"></i>
+                        </div>
+                        <h3 class="card-title text-dark">Courses</h3>
+                        <p class="card-text text-muted">
+                            {% if user.is_teacher %}
+                                Manage your courses, upload materials, and track student enrollments.
+                            {% else %}
+                                Browse available courses, enroll, and access learning materials.
+                            {% endif %}
+                        </p>
+                        <span class="btn btn-outline-success mt-2">
+                            <i class="bi bi-arrow-right me-1"></i>Go to Courses
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-10">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <div class="row text-center">
+                        {% if user.is_teacher %}
+                            <div class="col-md-4">
+                                <div class="py-3">
+                                    <h4 class="text-primary mb-1">{{ user.courses_teaching.count }}</h4>
+                                    <small class="text-muted">Courses Teaching</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="py-3">
+                                    <h4 class="text-success mb-1">{{ total_students|default:0 }}</h4>
+                                    <small class="text-muted">Total Students</small>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-md-4">
+                                <div class="py-3">
+                                    <h4 class="text-primary mb-1">{{ user.enrollments.count }}</h4>
+                                    <small class="text-muted">Enrolled Courses</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="py-3">
+                                    <h4 class="text-success mb-1">{{ available_courses|default:0 }}</h4>
+                                    <small class="text-muted">Available Courses</small>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="col-md-4">
+                            <div class="py-3">
+                                <h4 class="text-info mb-1">{{ user.status_updates.count }}</h4>
+                                <small class="text-muted">Status Updates</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}

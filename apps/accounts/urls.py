@@ -11,8 +11,12 @@ urlpatterns = [
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
     
-    # Home / Dashboard
-    path('', views.home_view, name='home'),
+    # Dashboard (landing page)
+    path('', views.dashboard_view, name='home'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    
+    # Posts (status updates)
+    path('posts/', views.posts_view, name='posts'),
     
     # Profile
     path('profile/edit/', login_required(views.ProfileEditView.as_view()), name='profile_edit'),
