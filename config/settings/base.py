@@ -12,6 +12,9 @@ SECRET_KEY = 'django-insecure-_kt35h8cs!mvc&r(o@_krl+e1win@&)awaug(_s^t7(dv^1pe!
 
 # Application definition
 INSTALLED_APPS = [
+    # Daphne must be first for ASGI
+    'daphne',
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -23,11 +26,22 @@ INSTALLED_APPS = [
     'rest_framework',
     'crispy_forms',
     'crispy_bootstrap5',
+    'channels',
     
     # Local apps
     'apps.accounts',
     'apps.courses',
+    'apps.notifications',
+    'apps.chat',
 ]
+
+# Channels configuration
+ASGI_APPLICATION = 'config.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

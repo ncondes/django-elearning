@@ -42,6 +42,15 @@
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
+                        <!-- Notifications -->
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'notifications:list' %}">
+                                <i class="bi bi-bell" id="notification-icon"></i>
+                                <span class="position-absolute badge rounded-pill d-none" id="notification-badge" style="top: 2px; right: -6px; font-size: 0.65rem; padding: 3px 5px; background-color: #5a9bd5;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.username }}
@@ -111,8 +120,115 @@
         </div>
     </footer>
 
+    {% if user.is_authenticated %}
+        {% include 'chat/chat_widget.html' %}
+    {% endif %}
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% if user.is_authenticated %}
+    <!-- Real-time Notifications via WebSocket -->
+    <script>
+    (function() {
+        const badge = document.getElementById('notification-badge');
+        const icon = document.getElementById('notification-icon');
+        
+        function updateBadge(count) {
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.classList.remove('d-none');
+                    // Switch to filled bell icon
+                    if (icon) {
+                        icon.classList.remove('bi-bell');
+                        icon.classList.add('bi-bell-fill');
+                    }
+                } else {
+                    badge.classList.add('d-none');
+                    // Switch to outline bell icon
+                    if (icon) {
+                        icon.classList.remove('bi-bell-fill');
+                        icon.classList.add('bi-bell');
+                    }
+                }
+            }
+        }
+        
+        function showNotificationToast(notification) {
+            // Create toast container if not exists
+            let toastContainer = document.getElementById('notification-toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'notification-toast-container';
+                toastContainer.className = 'position-fixed top-0 end-0 p-3';
+                toastContainer.style.zIndex = '1100';
+                document.body.appendChild(toastContainer);
+            }
+            
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast show" role="alert" style="background: white; border-left: 4px solid #5a9bd5;">
+                    <div class="toast-header">
+                        <i class="bi bi-bell-fill text-primary me-2"></i>
+                        <strong class="me-auto">${notification.title}</strong>
+                        <small>Just now</small>
+                        <button type="button" class="btn-close" onclick="this.closest('.toast').remove()"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${notification.message}
+                    </div>
+                </div>
+            `;
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                const toast = document.getElementById(toastId);
+                if (toast) toast.remove();
+            }, 5000);
+        }
+        
+        // Connect to notification WebSocket
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        let notificationSocket = null;
+        
+        function connectNotificationSocket() {
+            notificationSocket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/notifications/');
+            
+            notificationSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                
+                if (data.type === 'unread_count') {
+                    updateBadge(data.count);
+                }
+                else if (data.type === 'new_notification') {
+                    // Update badge (increment)
+                    const currentCount = parseInt(badge.textContent) || 0;
+                    updateBadge(currentCount + 1);
+                    
+                    // Show toast notification
+                    showNotificationToast(data.notification);
+                }
+            };
+            
+            notificationSocket.onclose = function() {
+                // Reconnect after 5 seconds
+                setTimeout(connectNotificationSocket, 5000);
+            };
+        }
+        
+        connectNotificationSocket();
+        
+        // Fallback: fetch count on page load
+        fetch('{% url "notifications:unread_count" %}')
+            .then(response => response.json())
+            .then(data => updateBadge(data.count))
+            .catch(err => console.log('Error fetching notifications:', err));
+    })();
+    </script>
+    {% endif %}
+    
     <!-- Custom JS -->
     {% block extra_js %}{% endblock %}
 </body>

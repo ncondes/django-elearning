@@ -23,6 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('apps.accounts.urls')),
     path('courses/', include('apps.courses.urls')),
+    path('notifications/', include('apps.notifications.urls')),
+    path('chat/', include('apps.chat.urls')),
     
     # REST API
     path('api/', include('apps.courses.api_urls')),

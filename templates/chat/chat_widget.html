@@ -1,0 +1,800 @@
+<!-- Chat Widget - LinkedIn Style -->
+<style>
+/* Chat Widget Container */
+.chat-widget-container {
+    position: fixed;
+    bottom: 0;
+    right: 20px;
+    z-index: 1050;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+/* Messaging Bar (LinkedIn style) */
+.messaging-bar {
+    width: 280px;
+    background: white;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.messaging-bar-header {
+    background: white;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background 0.2s;
+}
+
+.messaging-bar-header:hover {
+    background: #f8f9fa;
+}
+
+.messaging-bar-header .title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.messaging-bar-header .title i {
+    color: #5a9bd5;
+}
+
+.messaging-bar-header .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.messaging-bar-header .actions button {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.messaging-bar-header .actions button:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.messaging-bar-header .unread-badge {
+    background: #dc3545;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.messaging-bar-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.messaging-bar.open .messaging-bar-body {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.chat-list-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.chat-list-item:hover {
+    background: #f8f9fa;
+}
+
+.chat-list-item .course-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-list-item .course-name {
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-list-item .course-status {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.chat-list-item .online-indicator {
+    width: 10px;
+    height: 10px;
+    background: #28a745;
+    border-radius: 50%;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.chat-list-item .unread-dot {
+    width: 8px;
+    height: 8px;
+    background: #5a9bd5;
+    border-radius: 50%;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.chat-list-empty {
+    padding: 30px 15px;
+    text-align: center;
+    color: #6c757d;
+}
+
+/* Chat Window */
+.chat-window {
+    width: 320px;
+    background: white;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-window.expanded {
+    height: 400px;
+}
+
+.chat-window.collapsed {
+    height: auto;
+}
+
+.chat-window-header {
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.chat-window-header:hover {
+    background: #f8f9fa;
+}
+
+.chat-window-header .title-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-window-header .title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-window-header .online-dot {
+    width: 8px;
+    height: 8px;
+    background: #28a745;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.chat-window-header .unread-badge {
+    background: #dc3545;
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 5px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-left: 6px;
+}
+
+.chat-window-header .actions {
+    display: flex;
+    gap: 4px;
+}
+
+.chat-window-header .actions button {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.chat-window-header .actions button:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.chat-window-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-window.collapsed .chat-window-content {
+    display: none;
+}
+
+.chat-window-online {
+    background: #f8f9fa;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    color: #6c757d;
+    border-bottom: 1px solid #eee;
+    display: none;
+}
+
+.chat-window-online.show {
+    display: block;
+}
+
+.chat-window-online .online-user {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.chat-window-online .online-dot {
+    width: 6px;
+    height: 6px;
+    background: #28a745;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.chat-window-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: #fafafa;
+}
+
+.chat-message {
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-message.own {
+    align-items: flex-end;
+}
+
+.chat-message .bubble {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.chat-message.own .bubble {
+    background: #5a9bd5;
+    color: white;
+}
+
+.chat-message:not(.own) .bubble {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.chat-message .meta {
+    font-size: 0.65rem;
+    color: #999;
+    margin-top: 2px;
+    padding: 0 8px;
+}
+
+.chat-window-input {
+    padding: 10px;
+    border-top: 1px solid #e0e0e0;
+    background: white;
+}
+
+.chat-window-input form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.chat-window-input input {
+    flex: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.chat-window-input input:focus {
+    border-color: #5a9bd5;
+}
+
+.chat-window-input button {
+    background: #5a9bd5;
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.chat-window-input button:hover {
+    background: #4a8bc5;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .chat-widget-container {
+        right: 0;
+        left: 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .messaging-bar {
+        width: 100%;
+        border-radius: 0;
+    }
+    
+    .chat-window {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        border-radius: 0;
+        z-index: 1060;
+    }
+    
+    .chat-window.expanded {
+        height: 100vh;
+    }
+}
+</style>
+
+<div class="chat-widget-container" id="chatWidgetContainer">
+    <!-- Open Chat Windows -->
+    <div id="chatWindowsContainer" style="display: flex; gap: 10px; align-items: flex-end;"></div>
+    
+    <!-- Messaging Bar (LinkedIn style) -->
+    <div class="messaging-bar" id="messagingBar">
+        <div class="messaging-bar-header" onclick="toggleMessagingBar()">
+            <span class="title">
+                <i class="bi bi-chat-dots-fill"></i>
+                Messaging
+            </span>
+            <div class="actions">
+                <span class="unread-badge" id="totalUnreadBadge" style="display: none;">0</span>
+                <button onclick="event.stopPropagation(); toggleMessagingBar()">
+                    <i class="bi bi-chevron-up" id="messagingBarChevron"></i>
+                </button>
+            </div>
+        </div>
+        <div class="messaging-bar-body" id="messagingBarBody">
+            <div class="chat-list-empty" id="chatListLoading">
+                <i class="bi bi-chat-dots" style="font-size: 1.5rem; opacity: 0.5;"></i>
+                <p class="mt-2 mb-0" style="font-size: 0.85rem;">Loading chats...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const currentUserId = {{ request.user.id }};
+    let openChats = {};
+    let chatSockets = {};
+    let unreadCounts = {};
+    let chatRoomMap = {};
+    
+    // Toggle messaging bar
+    window.toggleMessagingBar = function() {
+        const bar = document.getElementById('messagingBar');
+        const chevron = document.getElementById('messagingBarChevron');
+        bar.classList.toggle('open');
+        
+        if (bar.classList.contains('open')) {
+            chevron.classList.remove('bi-chevron-up');
+            chevron.classList.add('bi-chevron-down');
+            loadChatList();
+        } else {
+            chevron.classList.remove('bi-chevron-down');
+            chevron.classList.add('bi-chevron-up');
+        }
+    };
+    
+    // Load available chats
+    function loadChatList() {
+        fetch('{% url "chat:user_chats" %}')
+            .then(response => response.json())
+            .then(data => {
+                const body = document.getElementById('messagingBarBody');
+                if (data.chats.length === 0) {
+                    body.innerHTML = `
+                        <div class="chat-list-empty">
+                            <i class="bi bi-chat-dots" style="font-size: 1.5rem; opacity: 0.5;"></i>
+                            <p class="mt-2 mb-0" style="font-size: 0.85rem;">No course chats available</p>
+                            <p class="mb-0" style="font-size: 0.75rem; color: #999;">Enroll in a course to start chatting</p>
+                        </div>
+                    `;
+                } else {
+                    // Store room mapping
+                    data.chats.forEach(chat => {
+                        chatRoomMap[chat.course_id] = chat.room_id;
+                    });
+                    
+                    body.innerHTML = data.chats.map(chat => `
+                        <div class="chat-list-item" onclick="openChatWindow(${chat.room_id}, '${escapeHtml(chat.course_title)}')">
+                            <div class="course-info">
+                                <div class="course-name">${escapeHtml(chat.course_title)}</div>
+                                <div class="course-status">${chat.online_count > 0 ? chat.online_count + ' online' : 'No one online'}</div>
+                            </div>
+                            ${chat.online_count > 0 ? '<div class="online-indicator"></div>' : ''}
+                            <div class="unread-dot" id="unreadDot-${chat.room_id}" style="display: none;"></div>
+                        </div>
+                    `).join('');
+                }
+            })
+            .catch(err => console.error('Error loading chats:', err));
+    }
+    
+    // Open chat from course detail page
+    window.openCourseChat = function(courseId, courseTitle) {
+        // First check if we have the room ID cached
+        if (chatRoomMap[courseId]) {
+            openChatWindow(chatRoomMap[courseId], courseTitle);
+        } else {
+            // Fetch room ID
+            fetch('{% url "chat:user_chats" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const chat = data.chats.find(c => c.course_id === courseId);
+                    if (chat) {
+                        chatRoomMap[courseId] = chat.room_id;
+                        openChatWindow(chat.room_id, courseTitle);
+                    }
+                });
+        }
+    };
+    
+    // Open a chat window
+    window.openChatWindow = function(roomId, courseTitle) {
+        // Close messaging bar
+        const bar = document.getElementById('messagingBar');
+        bar.classList.remove('open');
+        document.getElementById('messagingBarChevron').classList.remove('bi-chevron-down');
+        document.getElementById('messagingBarChevron').classList.add('bi-chevron-up');
+        
+        // Check if already open - if collapsed, expand it
+        if (openChats[roomId]) {
+            const existingWindow = document.getElementById(`chatWindow-${roomId}`);
+            if (existingWindow && existingWindow.classList.contains('collapsed')) {
+                toggleChatCollapse(roomId);
+            }
+            return;
+        }
+        
+        // Clear unread
+        unreadCounts[roomId] = 0;
+        updateUnreadBadge(roomId);
+        
+        // Create chat window
+        const container = document.getElementById('chatWindowsContainer');
+        const windowHtml = `
+            <div class="chat-window expanded" id="chatWindow-${roomId}" data-room-id="${roomId}">
+                <div class="chat-window-header" onclick="toggleChatCollapse(${roomId})">
+                    <div class="title-area">
+                        <span class="online-dot" id="chatOnlineDot-${roomId}" style="display: none;"></span>
+                        <span class="title">${escapeHtml(courseTitle)}</span>
+                        <span class="unread-badge" id="chatUnreadBadge-${roomId}" style="display: none;">0</span>
+                    </div>
+                    <div class="actions">
+                        <button onclick="event.stopPropagation(); toggleOnlineUsers(${roomId})" title="Online users">
+                            <i class="bi bi-people"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); toggleChatCollapse(${roomId})" title="Minimize">
+                            <i class="bi bi-dash" id="collapseIcon-${roomId}"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); closeChatWindow(${roomId})" title="Close">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-window-content">
+                    <div class="chat-window-online" id="chatOnline-${roomId}"></div>
+                    <div class="chat-window-messages" id="chatMessages-${roomId}">
+                        <div style="text-align: center; padding: 20px; color: #999;">
+                            Loading...
+                        </div>
+                    </div>
+                    <div class="chat-window-input">
+                        <form onsubmit="sendMessage(event, ${roomId})">
+                            <input type="text" id="chatInput-${roomId}" placeholder="Write a message..." autocomplete="off">
+                            <button type="submit"><i class="bi bi-send-fill"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', windowHtml);
+        openChats[roomId] = { collapsed: false, title: courseTitle };
+        
+        // Connect WebSocket
+        connectChatSocket(roomId);
+        
+        // Load initial messages
+        loadMessages(roomId);
+        
+        // Focus input
+        setTimeout(() => {
+            document.getElementById(`chatInput-${roomId}`).focus();
+        }, 100);
+    };
+    
+    // Toggle chat collapse
+    window.toggleChatCollapse = function(roomId) {
+        const chatWindow = document.getElementById(`chatWindow-${roomId}`);
+        const collapseIcon = document.getElementById(`collapseIcon-${roomId}`);
+        
+        if (chatWindow.classList.contains('expanded')) {
+            chatWindow.classList.remove('expanded');
+            chatWindow.classList.add('collapsed');
+            collapseIcon.classList.remove('bi-dash');
+            collapseIcon.classList.add('bi-plus');
+            openChats[roomId].collapsed = true;
+        } else {
+            chatWindow.classList.remove('collapsed');
+            chatWindow.classList.add('expanded');
+            collapseIcon.classList.remove('bi-plus');
+            collapseIcon.classList.add('bi-dash');
+            openChats[roomId].collapsed = false;
+            
+            // Clear unread when expanding
+            unreadCounts[roomId] = 0;
+            updateUnreadBadge(roomId);
+            
+            // Scroll to bottom
+            const container = document.getElementById(`chatMessages-${roomId}`);
+            if (container) container.scrollTop = container.scrollHeight;
+        }
+    };
+    
+    // Close chat window
+    window.closeChatWindow = function(roomId) {
+        const chatWindow = document.getElementById(`chatWindow-${roomId}`);
+        if (chatWindow) {
+            chatWindow.remove();
+        }
+        delete openChats[roomId];
+        delete unreadCounts[roomId];
+        
+        // Close WebSocket
+        if (chatSockets[roomId]) {
+            chatSockets[roomId].close();
+            delete chatSockets[roomId];
+        }
+    };
+    
+    // Toggle online users panel
+    window.toggleOnlineUsers = function(roomId) {
+        const panel = document.getElementById(`chatOnline-${roomId}`);
+        panel.classList.toggle('show');
+    };
+    
+    // Update unread badge
+    function updateUnreadBadge(roomId) {
+        const badge = document.getElementById(`chatUnreadBadge-${roomId}`);
+        const listDot = document.getElementById(`unreadDot-${roomId}`);
+        const count = unreadCounts[roomId] || 0;
+        
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        
+        if (listDot) {
+            listDot.style.display = count > 0 ? 'block' : 'none';
+        }
+        
+        // Update total unread
+        updateTotalUnread();
+    }
+    
+    // Update total unread badge
+    function updateTotalUnread() {
+        const total = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+        const badge = document.getElementById('totalUnreadBadge');
+        if (badge) {
+            if (total > 0) {
+                badge.textContent = total > 99 ? '99+' : total;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+    
+    // Load messages for a room
+    function loadMessages(roomId) {
+        fetch(`/chat/api/messages/${roomId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById(`chatMessages-${roomId}`);
+                if (!container) return;
+                
+                if (data.messages.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #999;">
+                            <i class="bi bi-chat-dots" style="font-size: 1.5rem; opacity: 0.5;"></i>
+                            <p class="mt-2 mb-0" style="font-size: 0.85rem;">No messages yet</p>
+                            <p class="mb-0" style="font-size: 0.75rem;">Start the conversation!</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = data.messages.map(msg => createMessageHtml(msg)).join('');
+                    container.scrollTop = container.scrollHeight;
+                }
+                
+                // Update online users
+                updateOnlineUsers(roomId, data.online_users);
+            })
+            .catch(err => console.error('Error loading messages:', err));
+    }
+    
+    // Connect WebSocket for a room
+    function connectChatSocket(roomId) {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/chat/' + roomId + '/');
+        
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            if (data.type === 'chat_message') {
+                const container = document.getElementById(`chatMessages-${roomId}`);
+                if (container) {
+                    // Remove placeholder
+                    const placeholder = container.querySelector('[style*="text-align: center"]');
+                    if (placeholder) placeholder.remove();
+                    
+                    const msgHtml = createMessageHtml({
+                        user_id: data.user_id,
+                        full_name: data.full_name,
+                        content: data.message,
+                        timestamp: data.timestamp
+                    });
+                    container.insertAdjacentHTML('beforeend', msgHtml);
+                    container.scrollTop = container.scrollHeight;
+                }
+                
+                // Update unread if collapsed or from another user
+                const chatWindow = document.getElementById(`chatWindow-${roomId}`);
+                if (data.user_id !== currentUserId) {
+                    if (!chatWindow || chatWindow.classList.contains('collapsed')) {
+                        unreadCounts[roomId] = (unreadCounts[roomId] || 0) + 1;
+                        updateUnreadBadge(roomId);
+                    }
+                }
+            }
+            else if (data.type === 'online_users') {
+                updateOnlineUsers(roomId, data.users);
+            }
+            else if (data.type === 'user_join' || data.type === 'user_leave') {
+                loadMessages(roomId);
+            }
+        };
+        
+        socket.onclose = function() {
+            setTimeout(() => {
+                if (openChats[roomId]) {
+                    connectChatSocket(roomId);
+                }
+            }, 3000);
+        };
+        
+        chatSockets[roomId] = socket;
+    }
+    
+    // Send message
+    window.sendMessage = function(event, roomId) {
+        event.preventDefault();
+        const input = document.getElementById(`chatInput-${roomId}`);
+        const message = input.value.trim();
+        
+        if (message && chatSockets[roomId] && chatSockets[roomId].readyState === WebSocket.OPEN) {
+            chatSockets[roomId].send(JSON.stringify({
+                type: 'chat_message',
+                message: message
+            }));
+            input.value = '';
+        }
+    };
+    
+    // Create message HTML
+    function createMessageHtml(msg) {
+        const isOwn = msg.user_id === currentUserId;
+        const time = new Date(msg.timestamp).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false});
+        return `
+            <div class="chat-message ${isOwn ? 'own' : ''}">
+                <div class="bubble">${escapeHtml(msg.content)}</div>
+                <div class="meta">${isOwn ? '' : escapeHtml(msg.full_name) + ' · '}${time}</div>
+            </div>
+        `;
+    }
+    
+    // Update online users display
+    function updateOnlineUsers(roomId, users) {
+        const panel = document.getElementById(`chatOnline-${roomId}`);
+        const dot = document.getElementById(`chatOnlineDot-${roomId}`);
+        
+        if (dot) {
+            dot.style.display = users.length > 0 ? 'inline-block' : 'none';
+        }
+        
+        if (panel) {
+            if (users.length === 0) {
+                panel.innerHTML = '<span class="text-muted">No one else online</span>';
+            } else {
+                panel.innerHTML = users.map(u => `
+                    <span class="online-user">
+                        <span class="online-dot"></span>
+                        ${escapeHtml(u.full_name)}
+                    </span>
+                `).join('');
+            }
+        }
+    }
+    
+    // Escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Load chat list on page load
+    loadChatList();
+})();
+</script>
