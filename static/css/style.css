@@ -1,0 +1,285 @@
+/* eLearning Platform Custom Styles */
+
+/* Minimalistic Color Palette - Soft Blue Theme */
+:root {
+    --primary-blue: #5a9bd5;
+    --primary-blue-light: #e8f1f8;
+    --primary-blue-hover: #4a8bc5;
+    --accent-green: #7cb87c;
+    --accent-green-light: #e8f5e8;
+    --bg-light: #f8f9fa;
+    --bg-white: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-muted: #888888;
+    --border-color: #dee2e6;
+    --error-color: #e8a5a5;
+    --error-text: #c25555;
+}
+
+/* General */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-light);
+    color: var(--text-primary);
+}
+
+main {
+    flex: 1;
+}
+
+/* Cards */
+.card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+/* Profile Photo with Role Badge */
+.profile-photo-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.profile-photo-ring {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-photo-ring.student-ring {
+    background: var(--primary-blue);
+}
+
+.profile-photo-ring.teacher-ring {
+    background: var(--accent-green);
+}
+
+.profile-photo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid var(--bg-white);
+}
+
+.profile-photo-placeholder {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--bg-white);
+}
+
+.role-badge-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: white;
+    white-space: nowrap;
+}
+
+.role-badge-overlay.student-badge {
+    background: var(--primary-blue);
+}
+
+.role-badge-overlay.teacher-badge {
+    background: var(--accent-green);
+}
+
+.profile-photo-sm {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Status Updates */
+.status-update {
+    border-left: 3px solid var(--primary-blue);
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+}
+
+.status-update .timestamp {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* User Type Badges */
+.badge-teacher {
+    background-color: var(--accent-green);
+    color: var(--bg-white);
+}
+
+.badge-student {
+    background-color: var(--primary-blue);
+    color: var(--bg-white);
+}
+
+/* Forms */
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Form validation - regular weight errors with soft color */
+.invalid-feedback,
+.form-text.text-danger,
+.errorlist,
+.errorlist li {
+    font-weight: 400 !important;
+    font-size: 0.875rem;
+    color: var(--error-text) !important;
+}
+
+/* Override Bootstrap's bold error text */
+.form-control.is-invalid ~ .invalid-feedback,
+.was-validated .form-control:invalid ~ .invalid-feedback {
+    font-weight: 400 !important;
+    color: var(--error-text) !important;
+}
+
+/* Soft error border color */
+.form-control.is-invalid,
+.was-validated .form-control:invalid {
+    border-color: var(--error-color) !important;
+}
+
+/* Error list styling */
+.errorlist {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0.5rem;
+}
+
+.errorlist li {
+    padding: 0.25rem 0;
+}
+
+.errorlist li::before {
+    content: "•";
+    margin-right: 0.5rem;
+    color: var(--error-text);
+}
+
+/* Valid state styling */
+.form-control.is-valid {
+    border-color: var(--accent-green) !important;
+}
+
+.form-control.is-valid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(124, 184, 124, 0.25) !important;
+}
+
+/* Interactive feedback display */
+.invalid-feedback {
+    display: none;
+    color: var(--error-text) !important;
+    font-weight: 400 !important;
+}
+
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+/* Auth Pages */
+.auth-container {
+    max-width: 420px;
+    margin: 2rem auto;
+}
+
+.auth-container .card {
+    border-radius: 0.5rem;
+}
+
+/* Navbar - minimalistic solid color */
+.navbar {
+    background-color: var(--primary-blue) !important;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    color: var(--bg-white) !important;
+}
+
+.navbar .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.navbar .nav-link:hover {
+    color: var(--bg-white) !important;
+}
+
+/* Buttons - minimalistic solid style */
+.btn-primary {
+    background-color: var(--primary-blue);
+    border: none;
+    color: var(--bg-white);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-blue-hover);
+    color: var(--bg-white);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    color: var(--bg-white);
+}
+
+/* Footer */
+footer {
+    background-color: #fff !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Form controls */
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.2rem rgba(90, 155, 213, 0.25);
+}
+
+/* Links */
+a {
+    color: var(--primary-blue);
+}
+
+a:hover {
+    color: var(--primary-blue-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-photo {
+        width: 100px;
+        height: 100px;
+    }
+}

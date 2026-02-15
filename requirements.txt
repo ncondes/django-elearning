@@ -1,0 +1,19 @@
+# Django
+Django>=5.0,<6.1
+
+# Django REST Framework
+djangorestframework>=3.14
+
+# Django Channels (WebSockets)
+channels>=4.0
+channels-redis>=4.1
+
+# Image handling
+Pillow>=10.0
+
+# Forms styling
+django-crispy-forms>=2.1
+crispy-bootstrap5>=2024.2
+
+# Development
+python-dotenv>=1.0

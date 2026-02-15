@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register - eLearning{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card">
+        <div class="card-header text-center">
+            <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i>Create Account</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate id="registerForm">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" name="username" id="id_username" 
+                           class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                           placeholder="Choose a username"
+                           value="{{ form.username.value|default:'' }}">
+                    {% if form.username.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="invalid-feedback" id="username-feedback"></div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email</label>
+                    <input type="email" name="email" id="id_email"
+                           class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                           placeholder="your.email@example.com"
+                           value="{{ form.email.value|default:'' }}">
+                    {% if form.email.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.email.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="invalid-feedback" id="email-feedback"></div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">First name</label>
+                        <input type="text" name="first_name" id="id_first_name"
+                               class="form-control"
+                               placeholder="Your first name"
+                               value="{{ form.first_name.value|default:'' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Last name</label>
+                        <input type="text" name="last_name" id="id_last_name"
+                               class="form-control"
+                               placeholder="Your last name"
+                               value="{{ form.last_name.value|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">I am a:</label>
+                    <div class="d-flex gap-4">
+                        {% for radio in form.user_type %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                    {% if radio.data.value == 'student' %}
+                                        <i class="bi bi-mortarboard me-1"></i>
+                                    {% else %}
+                                        <i class="bi bi-person-workspace me-1"></i>
+                                    {% endif %}
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <div class="input-group">
+                        <input type="password" name="password1" id="id_password1"
+                               class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                               placeholder="Create a password">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('id_password1', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password1.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.password1.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="invalid-feedback" id="password1-feedback"></div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">Password confirmation</label>
+                    <div class="input-group">
+                        <input type="password" name="password2" id="id_password2"
+                               class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                               placeholder="Confirm your password">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('id_password2', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.password2.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="invalid-feedback" id="password2-feedback"></div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-check-lg me-2"></i>Create Account
+                </button>
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <small class="text-muted">
+                Already have an account? <a href="{% url 'accounts:login' %}">Login here</a>
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle password visibility
+function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    const icon = button.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    
+    // Interactive validation on blur
+    const username = document.getElementById('id_username');
+    const email = document.getElementById('id_email');
+    const password1 = document.getElementById('id_password1');
+    const password2 = document.getElementById('id_password2');
+    
+    function showError(input, feedbackId, message) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        const feedback = document.getElementById(feedbackId);
+        if (feedback) feedback.textContent = message;
+    }
+    
+    function showValid(input) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    }
+    
+    function clearValidation(input) {
+        input.classList.remove('is-invalid', 'is-valid');
+    }
+    
+    // Username validation
+    username.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            showError(this, 'username-feedback', 'Please enter a username');
+        } else if (this.value.length < 3) {
+            showError(this, 'username-feedback', 'Username must be at least 3 characters');
+        } else if (!/^[\w.@+-]+$/.test(this.value)) {
+            showError(this, 'username-feedback', 'Username can only contain letters, numbers, and @/./+/-/_');
+        } else {
+            showValid(this);
+        }
+    });
+    
+    // Email validation
+    email.addEventListener('blur', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (this.value.trim() === '') {
+            showError(this, 'email-feedback', 'Please enter your email address');
+        } else if (!emailRegex.test(this.value)) {
+            showError(this, 'email-feedback', 'Please enter a valid email address');
+        } else {
+            showValid(this);
+        }
+    });
+    
+    // Password validation
+    password1.addEventListener('blur', function() {
+        if (this.value === '') {
+            showError(this, 'password1-feedback', 'Please create a password');
+        } else if (this.value.length < 8) {
+            showError(this, 'password1-feedback', 'Password must be at least 8 characters long');
+        } else if (/^\d+$/.test(this.value)) {
+            showError(this, 'password1-feedback', 'Password cannot be only numbers — please include some letters');
+        } else {
+            showValid(this);
+        }
+        
+        // Also check password2 if it has a value
+        if (password2.value !== '') {
+            password2.dispatchEvent(new Event('blur'));
+        }
+    });
+    
+    // Password confirmation validation
+    password2.addEventListener('blur', function() {
+        if (this.value === '') {
+            showError(this, 'password2-feedback', 'Please confirm your password');
+        } else if (this.value !== password1.value) {
+            showError(this, 'password2-feedback', 'Passwords do not match');
+        } else {
+            showValid(this);
+        }
+    });
+    
+    // Clear validation on focus
+    [username, email, password1, password2].forEach(function(input) {
+        input.addEventListener('focus', function() {
+            clearValidation(this);
+        });
+    });
+});
+</script>
+{% endblock %}
