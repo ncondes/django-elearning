@@ -60,14 +60,24 @@ class CourseDetailView(LoginRequiredMixin, DetailView):
         user = self.request.user
         course = self.object
         
-        # Check if user is enrolled
+        # Check if user is enrolled or blocked
         enrollment = None
+        is_blocked = False
         if not user.is_teacher:
-            enrollment = Enrollment.objects.filter(
-                student=user, course=course
+            # First check for blocked enrollment
+            blocked_enrollment = Enrollment.objects.filter(
+                student=user, course=course, is_blocked=True
             ).first()
+            if blocked_enrollment:
+                is_blocked = True
+            else:
+                # Check for active enrollment
+                enrollment = Enrollment.objects.filter(
+                    student=user, course=course, is_active=True
+                ).first()
         
         context['enrollment'] = enrollment
+        context['is_blocked'] = is_blocked
         context['is_teacher_owner'] = user == course.teacher
         context['materials'] = course.materials.all()
         context['feedbacks'] = CourseFeedback.objects.filter(

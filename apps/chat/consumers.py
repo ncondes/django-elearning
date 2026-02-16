@@ -1,7 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.utils import timezone
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -95,6 +94,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'message_id': message_data['id'],
                     }
                 )
+                
+                # Notify users not in the chat room (for badge updates)
+                await self.notify_absent_users(content, message_data)
     
     async def chat_message(self, event):
         """Handle chat message event."""
@@ -201,3 +203,98 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'id': message.id,
             'timestamp': message.created_at.isoformat(),
         }
+    
+    async def notify_absent_users(self, content, message_data):
+        """Notify users who have access but are not in the chat room."""
+        absent_user_ids = await self.get_absent_user_ids()
+        
+        for user_id in absent_user_ids:
+            # Send to user's personal chat notification group
+            await self.channel_layer.group_send(
+                f'chat_notifications_{user_id}',
+                {
+                    'type': 'new_message_notification',
+                    'room_id': int(self.room_id),
+                    'sender_id': self.user.id,
+                    'sender_name': self.user.get_full_name() or self.user.username,
+                    'message_preview': content[:50] + ('...' if len(content) > 50 else ''),
+                    'timestamp': message_data['timestamp'],
+                }
+            )
+    
+    @database_sync_to_async
+    def get_absent_user_ids(self):
+        """Get user IDs who have access to this room but are not currently online in it."""
+        from apps.chat.models import ChatRoom, OnlineUser
+        from apps.courses.models import Enrollment
+        
+        try:
+            room = ChatRoom.objects.get(id=self.room_id)
+            course = room.course
+            
+            # Get all users with access
+            user_ids = set()
+            
+            # Add teacher
+            user_ids.add(course.teacher_id)
+            
+            # Add enrolled students
+            enrolled_ids = Enrollment.objects.filter(
+                course=course,
+                is_active=True,
+                is_blocked=False
+            ).values_list('student_id', flat=True)
+            user_ids.update(enrolled_ids)
+            
+            # Remove sender
+            user_ids.discard(self.user.id)
+            
+            # Remove users currently online in the room
+            online_ids = set(OnlineUser.objects.filter(room=room).values_list('user_id', flat=True))
+            user_ids -= online_ids
+            
+            return list(user_ids)
+        except ChatRoom.DoesNotExist:
+            return []
+
+
+class ChatNotificationConsumer(AsyncWebsocketConsumer):
+    """WebSocket consumer for global chat notifications (badge updates)."""
+    
+    async def connect(self):
+        if self.scope['user'].is_anonymous:
+            await self.close()
+            return
+        
+        self.user = self.scope['user']
+        self.group_name = f'chat_notifications_{self.user.id}'
+        
+        # Join user's personal notification group
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
+        
+        await self.accept()
+    
+    async def disconnect(self, close_code):
+        if hasattr(self, 'group_name'):
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name
+            )
+    
+    async def receive(self, text_data):
+        """Handle incoming messages (not used, but required)."""
+        pass
+    
+    async def new_message_notification(self, event):
+        """Send new message notification to the client."""
+        await self.send(text_data=json.dumps({
+            'type': 'new_message',
+            'room_id': event['room_id'],
+            'sender_id': event['sender_id'],
+            'sender_name': event['sender_name'],
+            'message_preview': event['message_preview'],
+            'timestamp': event['timestamp'],
+        }))

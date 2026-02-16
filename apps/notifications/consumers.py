@@ -80,19 +80,3 @@ def send_notification_to_user(user_id, notification_data):
             'notification': notification_data
         }
     )
-
-
-def send_unread_count_to_user(user_id, count):
-    """
-    Helper function to send updated unread count to a user.
-    """
-    channel_layer = get_channel_layer()
-    group_name = f'notifications_{user_id}'
-    
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        {
-            'type': 'unread_count_update',
-            'count': count
-        }
-    )

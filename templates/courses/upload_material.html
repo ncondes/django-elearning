@@ -41,7 +41,7 @@
             
             <div class="mb-3">
                 <label for="id_description" class="form-label">Description (optional)</label>
-                {{ form.description }}
+                {% include 'includes/markdown_editor.html' with field_name='description' field_id='id_description' field_value=form.description.value rows=2 placeholder="Brief description (optional)" %}
             </div>
             
             <div class="mb-3">

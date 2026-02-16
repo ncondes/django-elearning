@@ -1,0 +1,126 @@
+{% comment %}
+Reusable Markdown Editor Component with Write/Preview tabs (GitHub style)
+
+Usage:
+{% include 'includes/markdown_editor.html' with field_name='content' field_id='id_content' field_value=form.content.value rows=3 placeholder="What's on your mind?" %}
+
+Required parameters:
+- field_name: The form field name
+- field_id: The HTML id for the textarea
+- rows: Number of rows for textarea (default: 3)
+- placeholder: Placeholder text
+
+Optional:
+- field_value: Initial value for the textarea
+{% endcomment %}
+
+<div class="markdown-editor" data-editor-id="{{ field_id }}">
+    <div class="markdown-editor-tabs">
+        <button type="button" class="markdown-tab active" data-tab="write" onclick="switchMarkdownTab('{{ field_id }}', 'write')">
+            <i class="bi bi-pencil me-1"></i>Write
+        </button>
+        <button type="button" class="markdown-tab" data-tab="preview" onclick="switchMarkdownTab('{{ field_id }}', 'preview')">
+            <i class="bi bi-eye me-1"></i>Preview
+        </button>
+    </div>
+    
+    <div class="markdown-editor-content">
+        <div class="markdown-write-pane" id="{{ field_id }}-write-pane">
+            <textarea 
+                name="{{ field_name }}" 
+                id="{{ field_id }}" 
+                class="form-control markdown-textarea" 
+                rows="{{ rows|default:3 }}" 
+                placeholder="{{ placeholder|default:'Enter text...' }}"
+                oninput="updateMarkdownPreview('{{ field_id }}')"
+            >{{ field_value|default:'' }}</textarea>
+        </div>
+        <div class="markdown-preview-pane" id="{{ field_id }}-preview-pane" style="display: none;">
+            <div class="markdown-preview-content markdown-body" id="{{ field_id }}-preview">
+                <span class="text-muted fst-italic">Nothing to preview</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="markdown-editor-hint">
+        <i class="bi bi-markdown me-1"></i>
+        Supports Markdown. Images not supported.
+    </div>
+</div>
+
+<script>
+(function() {
+    // Only load marked.js and DOMPurify once
+    if (!window.markedLoaded) {
+        window.markedLoaded = true;
+        
+        // Load marked.js for markdown parsing
+        const markedScript = document.createElement('script');
+        markedScript.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+        document.head.appendChild(markedScript);
+        
+        // Load DOMPurify for sanitization
+        const purifyScript = document.createElement('script');
+        purifyScript.src = 'https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js';
+        document.head.appendChild(purifyScript);
+    }
+    
+    // Switch between Write and Preview tabs
+    window.switchMarkdownTab = function(editorId, tab) {
+        const editor = document.querySelector(`[data-editor-id="${editorId}"]`);
+        const writePane = document.getElementById(`${editorId}-write-pane`);
+        const previewPane = document.getElementById(`${editorId}-preview-pane`);
+        const tabs = editor.querySelectorAll('.markdown-tab');
+        
+        tabs.forEach(t => t.classList.remove('active'));
+        editor.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        
+        if (tab === 'write') {
+            writePane.style.display = 'block';
+            previewPane.style.display = 'none';
+        } else {
+            writePane.style.display = 'none';
+            previewPane.style.display = 'block';
+            updateMarkdownPreview(editorId);
+        }
+    };
+    
+    // Update preview content
+    window.updateMarkdownPreview = function(editorId) {
+        const textarea = document.getElementById(editorId);
+        const preview = document.getElementById(`${editorId}-preview`);
+        const content = textarea.value.trim();
+        
+        if (!content) {
+            preview.innerHTML = '<span class="text-muted fst-italic">Nothing to preview</span>';
+            return;
+        }
+        
+        // Wait for libraries to load
+        if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+            preview.innerHTML = '<span class="text-muted">Loading preview...</span>';
+            setTimeout(() => updateMarkdownPreview(editorId), 100);
+            return;
+        }
+        
+        // Configure marked to not allow images
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+        
+        // Parse markdown
+        let html = marked.parse(content);
+        
+        // Sanitize HTML - remove images and dangerous content
+        html = DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'code', 'pre', 'ul', 'ol', 'li', 
+                          'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'hr'],
+            ALLOWED_ATTR: ['href', 'title'],
+            FORBID_TAGS: ['img', 'iframe', 'script', 'style']
+        });
+        
+        preview.innerHTML = html || '<span class="text-muted fst-italic">Nothing to preview</span>';
+    };
+})();
+</script>

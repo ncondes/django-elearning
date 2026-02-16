@@ -425,6 +425,37 @@
     let chatSockets = {};
     let unreadCounts = {};
     let chatRoomMap = {};
+    let notificationSocket = null;
+    
+    // Connect to global chat notification WebSocket
+    function connectNotificationSocket() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        notificationSocket = new WebSocket(wsProtocol + '//' + window.location.host + '/ws/chat/notifications/');
+        
+        notificationSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            if (data.type === 'new_message') {
+                // Check if this room's chat window is open and expanded
+                const chatWindow = document.getElementById(`chatWindow-${data.room_id}`);
+                const isOpenAndExpanded = chatWindow && chatWindow.classList.contains('expanded');
+                
+                if (!isOpenAndExpanded) {
+                    // Increment unread count for this room
+                    unreadCounts[data.room_id] = (unreadCounts[data.room_id] || 0) + 1;
+                    updateUnreadBadge(data.room_id);
+                }
+            }
+        };
+        
+        notificationSocket.onclose = function() {
+            // Reconnect after delay
+            setTimeout(connectNotificationSocket, 3000);
+        };
+    }
+    
+    // Start notification socket connection
+    connectNotificationSocket();
     
     // Toggle messaging bar
     window.toggleMessagingBar = function() {

@@ -1,4 +1,5 @@
 {% extends 'base_sidebar.html' %}
+{% load markdown_extras %}
 
 {% block title %}{{ course.title }} - eLearning{% endblock %}
 
@@ -133,20 +134,18 @@
     
     <!-- Enrollment Actions (Students) -->
     {% if not user.is_teacher %}
-        {% if enrollment %}
-            {% if enrollment.is_blocked %}
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>You have been blocked from this course.
-                </div>
-            {% else %}
-                <div class="alert alert-success">
-                    <i class="bi bi-check-circle me-2"></i>You are enrolled in this course.
-                    <form method="post" action="{% url 'courses:unenroll' course.pk %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">Unenroll</button>
-                    </form>
-                </div>
-            {% endif %}
+        {% if is_blocked %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>You have been blocked from this course.
+            </div>
+        {% elif enrollment %}
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle me-2"></i>You are enrolled in this course.
+                <form method="post" action="{% url 'courses:unenroll' course.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">Unenroll</button>
+                </form>
+            </div>
         {% else %}
             <form method="post" action="{% url 'courses:enroll' course.pk %}">
                 {% csrf_token %}
@@ -183,7 +182,7 @@
                             {{ material.title }}
                         {% endif %}
                         {% if material.description %}
-                            <small class="text-muted d-block ms-4">{{ material.description }}</small>
+                            <div class="text-muted d-block ms-4 markdown-body markdown-inline">{{ material.description|markdown }}</div>
                         {% endif %}
                     </div>
                     <div class="d-flex align-items-center gap-2">
