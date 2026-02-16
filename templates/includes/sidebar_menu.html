@@ -1,0 +1,16 @@
+<!-- Reusable Sidebar Menu -->
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Menu</div>
+    <a href="{% url 'accounts:posts' %}" class="sidebar-link {% if active_menu == 'posts' %}active{% endif %}">
+        <i class="bi bi-chat-square-text"></i>
+        <span>My Posts</span>
+    </a>
+    <a href="{% url 'courses:course_list' %}" class="sidebar-link {% if active_menu == 'courses' %}active{% endif %}">
+        <i class="bi bi-collection"></i>
+        <span>Courses</span>
+    </a>
+    <a href="{% url 'notifications:list' %}" class="sidebar-link {% if active_menu == 'notifications' %}active{% endif %}">
+        <i class="bi bi-bell"></i>
+        <span>Notifications</span>
+    </a>
+</div>

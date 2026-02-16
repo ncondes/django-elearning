@@ -1,86 +1,94 @@
-{% extends 'base.html' %}
+{% extends 'base_sidebar.html' %}
 
 {% block title %}Notifications - eLearning{% endblock %}
 
-{% block content %}
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Notifications</h5>
-                {% if notifications %}
-                    <a href="{% url 'notifications:mark_all_as_read' %}" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-check-all me-1"></i>Mark All as Read
-                    </a>
-                {% endif %}
-            </div>
-            <div class="card-body p-0">
-                {% if notifications %}
-                    <ul class="list-group list-group-flush">
-                        {% for notification in notifications %}
-                            <li class="list-group-item {% if not notification.is_read %}bg-light{% endif %}">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex align-items-center mb-1">
-                                            {% if notification.notification_type == 'enrollment' %}
-                                                <i class="bi bi-person-plus text-success me-2"></i>
-                                            {% elif notification.notification_type == 'new_material' %}
-                                                <i class="bi bi-file-earmark-plus text-primary me-2"></i>
-                                            {% elif notification.notification_type == 'new_rating' %}
-                                                <i class="bi bi-star text-warning me-2"></i>
-                                            {% endif %}
-                                            <strong>{{ notification.title }}</strong>
-                                            {% if not notification.is_read %}
-                                                <span class="badge bg-primary ms-2">New</span>
-                                            {% endif %}
-                                        </div>
-                                        <p class="mb-1 text-muted">{{ notification.message }}</p>
-                                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
-                                    </div>
-                                    <div class="ms-3">
-                                        {% if notification.course %}
-                                            <a href="{% url 'courses:course_detail' notification.course.pk %}" 
-                                               class="btn btn-outline-primary btn-sm">View Course</a>
-                                        {% endif %}
-                                        {% if not notification.is_read %}
-                                            <a href="{% url 'notifications:mark_as_read' notification.pk %}" 
-                                               class="btn btn-outline-secondary btn-sm ms-1" title="Mark as read">
-                                                <i class="bi bi-check"></i>
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    
-                    {% if page_obj.has_other_pages %}
-                        <nav class="p-3">
-                            <ul class="pagination justify-content-center mb-0">
-                                {% if page_obj.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                                    </li>
-                                {% endif %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                                </li>
-                                {% if page_obj.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    {% endif %}
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
-                        <p class="text-muted mt-3 mb-0">No notifications yet.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+{% block sidebar %}
+{% with active_menu='notifications' %}{% include 'includes/sidebar_menu.html' %}{% endwith %}
+
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Quick Actions</div>
+    {% if notifications %}
+        <a href="{% url 'notifications:mark_all_as_read' %}" class="sidebar-link sidebar-action">
+            <i class="bi bi-check-all"></i>
+            <span>Mark All as Read</span>
+        </a>
+    {% endif %}
 </div>
+{% endblock sidebar %}
+
+{% block breadcrumb %}
+<div class="breadcrumb-bar">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Notifications</li>
+        </ol>
+    </nav>
+</div>
+{% endblock breadcrumb %}
+
+{% block content %}
+{% if notifications %}
+    <div class="list-group">
+        {% for notification in notifications %}
+            <div class="list-group-item {% if not notification.is_read %}border-start border-primary border-3{% endif %}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-1">
+                            {% if notification.notification_type == 'enrollment' %}
+                                <i class="bi bi-person-plus text-success me-2"></i>
+                            {% elif notification.notification_type == 'new_material' %}
+                                <i class="bi bi-file-earmark-plus text-primary me-2"></i>
+                            {% elif notification.notification_type == 'new_rating' %}
+                                <i class="bi bi-star text-warning me-2"></i>
+                            {% endif %}
+                            <strong>{{ notification.title }}</strong>
+                            {% if not notification.is_read %}
+                                <span class="badge bg-primary ms-2">New</span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-1 text-muted">{{ notification.message }}</p>
+                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                    </div>
+                    <div class="ms-3 d-flex gap-2">
+                        {% if notification.course %}
+                            <a href="{% url 'courses:course_detail' notification.course.pk %}" 
+                               class="btn btn-outline-primary btn-sm">View Course</a>
+                        {% endif %}
+                        {% if not notification.is_read %}
+                            <a href="{% url 'notifications:mark_as_read' notification.pk %}" 
+                               class="btn btn-outline-secondary btn-sm" title="Mark as read">
+                                <i class="bi bi-check"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+                <li class="page-item disabled">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
+        <p class="text-muted mt-3 mb-0">No notifications yet.</p>
+    </div>
+{% endif %}
 {% endblock %}

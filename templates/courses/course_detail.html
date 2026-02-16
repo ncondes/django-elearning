@@ -1,328 +1,383 @@
-{% extends 'base.html' %}
+{% extends 'base_sidebar.html' %}
 
 {% block title %}{{ course.title }} - eLearning{% endblock %}
 
-{% block content %}
-<div class="row">
-    <!-- Left Sidebar -->
-    <div class="col-md-3 mb-4">
-        <!-- Back Button -->
-        <div class="card mb-3">
-            <div class="card-body py-2">
-                <a href="{% url 'courses:course_list' %}" class="text-decoration-none">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Courses
-                </a>
-            </div>
-        </div>
-        
-        {% if is_teacher_owner %}
-            <!-- Enrolled Students (Teacher Only) -->
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-people me-2"></i>Enrolled Students</h6>
-                </div>
-                <div class="card-body p-0">
-                    {% with enrollments=course.enrollments.all %}
-                        {% if enrollments %}
-                            <ul class="list-group list-group-flush">
-                                {% for enrollment in enrollments %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
-                                        <div>
-                                            <a href="{% url 'accounts:profile' enrollment.student.username %}" class="text-decoration-none small">
-                                                {{ enrollment.student.get_full_name|default:enrollment.student.username }}
-                                            </a>
-                                            {% if enrollment.is_blocked %}
-                                                <span class="badge bg-danger ms-1">Blocked</span>
-                                            {% elif not enrollment.is_active %}
-                                                <span class="badge bg-secondary ms-1">Inactive</span>
-                                            {% endif %}
-                                        </div>
-                                        <div>
-                                            {% if enrollment.is_blocked %}
-                                                <form method="post" action="{% url 'courses:unblock_student' course.pk enrollment.student.pk %}" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-outline-success btn-sm py-0 px-1" title="Unblock">
-                                                        <i class="bi bi-unlock"></i>
-                                                    </button>
-                                                </form>
-                                            {% else %}
-                                                <form method="post" action="{% url 'courses:block_student' course.pk enrollment.student.pk %}" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-1" title="Block" 
-                                                            onclick="return confirm('Block this student?')">
-                                                        <i class="bi bi-slash-circle"></i>
-                                                    </button>
-                                                </form>
-                                            {% endif %}
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted text-center mb-0 py-3 small">No students enrolled yet.</p>
+{% block sidebar %}
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Navigation</div>
+    <a href="{% url 'courses:course_list' %}" class="sidebar-link">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Courses</span>
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-title">This Course</div>
+    <a href="#course-info" class="sidebar-link course-nav-link active" data-section="course-info">
+        <i class="bi bi-info-circle"></i>
+        <span>Overview</span>
+    </a>
+    <a href="#course-materials" class="sidebar-link course-nav-link" data-section="course-materials">
+        <i class="bi bi-folder"></i>
+        <span>Materials</span>
+        {% if materials %}<span class="sidebar-badge">{{ materials|length }}</span>{% endif %}
+    </a>
+    <a href="#course-reviews" class="sidebar-link course-nav-link" data-section="course-reviews">
+        <i class="bi bi-chat-quote"></i>
+        <span>Reviews</span>
+    </a>
+</div>
+
+{% if is_teacher_owner %}
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Enrolled Students</div>
+    {% with enrollments=course.enrollments.all %}
+        {% if enrollments %}
+            {% for enrollment in enrollments %}
+                <div class="sidebar-link" style="justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
+                        <i class="bi bi-person"></i>
+                        <a href="{% url 'accounts:profile' enrollment.student.username %}" class="text-decoration-none" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit;">
+                            {{ enrollment.student.get_full_name|default:enrollment.student.username }}
+                        </a>
+                        {% if enrollment.is_blocked %}
+                            <span class="badge bg-danger" style="font-size: 0.6rem;">Blocked</span>
                         {% endif %}
-                    {% endwith %}
+                    </div>
+                    <div style="flex-shrink: 0;">
+                        {% if enrollment.is_blocked %}
+                            <form method="post" action="{% url 'courses:unblock_student' course.pk enrollment.student.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-link btn-sm p-0 text-success" title="Unblock">
+                                    <i class="bi bi-unlock"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'courses:block_student' course.pk enrollment.student.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-link btn-sm p-0 text-danger" title="Block" onclick="return confirm('Block this student?')">
+                                    <i class="bi bi-slash-circle"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
+            {% endfor %}
+        {% else %}
+            <div class="sidebar-link" style="color: var(--sidebar-text-muted); font-size: 0.8rem;">
+                <i class="bi bi-person-x"></i>
+                <span>No students enrolled</span>
             </div>
+        {% endif %}
+    {% endwith %}
+</div>
+{% endif %}
+{% endblock sidebar %}
+
+{% block breadcrumb %}
+<div class="breadcrumb-bar">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+            <li class="breadcrumb-item active">{{ course.title }}</li>
+        </ol>
+    </nav>
+    
+    
+    <!-- Actions -->
+    <div class="breadcrumb-actions">
+        {% if enrollment and not enrollment.is_blocked %}
+            <button type="button" onclick="openCourseChat({{ course.pk }}, '{{ course.title|escapejs }}')" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-chat-dots me-1"></i>Chat
+            </button>
+        {% endif %}
+        {% if is_teacher_owner %}
+            <button type="button" onclick="openCourseChat({{ course.pk }}, '{{ course.title|escapejs }}')" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-chat-dots me-1"></i>Chat
+            </button>
+            <a href="{% url 'courses:course_edit' course.pk %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil me-1"></i>Edit
+            </a>
+            <a href="{% url 'courses:course_delete' course.pk %}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash me-1"></i>Delete
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock breadcrumb %}
+
+{% block content %}
+<!-- Course Overview -->
+<section id="course-info" class="mb-4">
+    <h4 class="mb-3">{{ course.title }}</h4>
+    <p class="text-muted">{{ course.description }}</p>
+    
+    <div class="d-flex gap-3 text-muted small mb-3">
+        <span><i class="bi bi-calendar me-1"></i>Created {{ course.created_at|date:"M d, Y" }}</span>
+    </div>
+    
+    {% if course.average_rating %}
+        <div class="mb-3">
+            <span class="text-warning">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= course.average_rating %}
+                        <i class="bi bi-star-fill"></i>
+                    {% else %}
+                        <i class="bi bi-star"></i>
+                    {% endif %}
+                {% endfor %}
+            </span>
+            <span class="text-muted ms-1">{{ course.average_rating }} / 5</span>
+        </div>
+    {% endif %}
+    
+    <!-- Enrollment Actions (Students) -->
+    {% if not user.is_teacher %}
+        {% if enrollment %}
+            {% if enrollment.is_blocked %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>You have been blocked from this course.
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>You are enrolled in this course.
+                    <form method="post" action="{% url 'courses:unenroll' course.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">Unenroll</button>
+                    </form>
+                </div>
+            {% endif %}
+        {% else %}
+            <form method="post" action="{% url 'courses:enroll' course.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>Enroll in this Course
+                </button>
+            </form>
+        {% endif %}
+    {% endif %}
+</section>
+
+<hr class="my-5">
+
+<!-- Course Materials -->
+<section id="course-materials" class="mb-4 pt-2">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Course Materials</h5>
+        {% if is_teacher_owner %}
+            <a href="{% url 'courses:upload_material' course.pk %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-upload me-1"></i>Upload
+            </a>
         {% endif %}
     </div>
     
-    <!-- Main Content -->
-    <div class="col-md-9 mb-4">
-        <!-- Course Header -->
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{{ course.title }}</h5>
+    {% if materials %}
+        <div class="list-group">
+            {% for material in materials %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-file-earmark me-2 text-muted"></i>
+                        {% if enrollment or is_teacher_owner %}
+                            <a href="{{ material.file.url }}" target="_blank">{{ material.title }}</a>
+                        {% else %}
+                            {{ material.title }}
+                        {% endif %}
+                        {% if material.description %}
+                            <small class="text-muted d-block ms-4">{{ material.description }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <small class="text-muted">{{ material.uploaded_at|date:"M d" }}</small>
+                        {% if is_teacher_owner %}
+                            <form method="post" action="{% url 'courses:delete_material' course.pk material.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this material?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted text-center py-4">No materials uploaded yet.</p>
+    {% endif %}
+</section>
+
+<hr class="my-5">
+
+<!-- Reviews Section -->
+<section id="course-reviews" class="mb-4 pt-2">
+    <h5 class="mb-3"><i class="bi bi-chat-quote me-2"></i>Reviews</h5>
+    
+    {% if can_edit_feedback %}
+        <!-- Read-only view of existing review -->
+        <div id="review-display" class="mb-4 p-3 bg-light rounded">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    {% if enrollment and not enrollment.is_blocked %}
-                        <button type="button" onclick="openCourseChat({{ course.pk }}, '{{ course.title|escapejs }}')" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-chat-dots me-1"></i>Chat
-                        </button>
-                    {% endif %}
-                    {% if is_teacher_owner %}
-                        <button type="button" onclick="openCourseChat({{ course.pk }}, '{{ course.title|escapejs }}')" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-chat-dots me-1"></i>Chat
-                        </button>
-                        <a href="{% url 'courses:course_edit' course.pk %}" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-pencil me-1"></i>Edit
-                        </a>
-                        <a href="{% url 'courses:course_delete' course.pk %}" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-trash me-1"></i>Delete
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="card-body">
-                <p class="mb-3">{{ course.description }}</p>
-                
-                <div class="d-flex gap-3 text-muted small mb-3">
-                    <span><i class="bi bi-person me-1"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
-                    <span><i class="bi bi-people me-1"></i>{{ course.enrolled_count }} enrolled</span>
-                    <span><i class="bi bi-calendar me-1"></i>{{ course.created_at|date:"M d, Y" }}</span>
-                </div>
-                
-                {% if course.average_rating %}
-                    <div class="mb-3">
+                    <label class="form-label text-muted mb-1">Your Review</label>
+                    <div class="mb-2">
                         <span class="text-warning">
                             {% for i in "12345" %}
-                                {% if forloop.counter <= course.average_rating %}
+                                {% if forloop.counter <= user_feedback.rating %}
                                     <i class="bi bi-star-fill"></i>
                                 {% else %}
                                     <i class="bi bi-star"></i>
                                 {% endif %}
                             {% endfor %}
                         </span>
-                        <span class="text-muted ms-1">{{ course.average_rating }} / 5</span>
+                        <span class="ms-2 text-muted">({{ user_feedback.rating }}/5)</span>
                     </div>
-                {% endif %}
-                
-                <!-- Enrollment Actions (Students) -->
-                {% if not user.is_teacher %}
-                    {% if enrollment %}
-                        {% if enrollment.is_blocked %}
-                            <div class="alert alert-danger">
-                                <i class="bi bi-exclamation-triangle me-2"></i>You have been blocked from this course.
-                            </div>
-                        {% else %}
-                            <div class="alert alert-success mb-0">
-                                <i class="bi bi-check-circle me-2"></i>You are enrolled in this course.
-                                <form method="post" action="{% url 'courses:unenroll' course.pk %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2">Unenroll</button>
-                                </form>
-                            </div>
-                        {% endif %}
+                    {% if user_feedback.comment %}
+                        <p class="mb-1">{{ user_feedback.comment }}</p>
                     {% else %}
-                        <form method="post" action="{% url 'courses:enroll' course.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus-lg me-1"></i>Enroll in this Course
-                            </button>
-                        </form>
+                        <p class="mb-1 text-muted fst-italic">No comment</p>
                     {% endif %}
-                {% endif %}
+                    <small class="text-muted">Last updated: {{ user_feedback.updated_at|date:"M d, Y" }}</small>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="edit-review-btn">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </button>
             </div>
         </div>
         
-        <!-- Course Materials -->
-        <div class="card mt-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Course Materials</h5>
-                {% if is_teacher_owner %}
-                    <a href="{% url 'courses:upload_material' course.pk %}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-upload me-1"></i>Upload
-                    </a>
-                {% endif %}
-            </div>
-            <div class="card-body">
-                {% if materials %}
-                    <ul class="list-group list-group-flush">
-                        {% for material in materials %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <i class="bi bi-file-earmark me-2"></i>
-                                    {% if enrollment or is_teacher_owner %}
-                                        <a href="{{ material.file.url }}" target="_blank">{{ material.title }}</a>
-                                    {% else %}
-                                        {{ material.title }}
-                                    {% endif %}
-                                    {% if material.description %}
-                                        <small class="text-muted d-block">{{ material.description }}</small>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    <small class="text-muted me-2">{{ material.uploaded_at|date:"M d" }}</small>
-                                    {% if is_teacher_owner %}
-                                        <form method="post" action="{% url 'courses:delete_material' course.pk material.pk %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this material?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-muted text-center mb-0">No materials uploaded yet.</p>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Feedback Section -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-chat-quote me-2"></i>Reviews</h5>
-            </div>
-            <div class="card-body">
-                {% if can_edit_feedback %}
-                    <!-- Read-only view of existing review -->
-                    <div id="review-display" class="mb-4">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <label class="form-label text-muted mb-1">Your Review</label>
-                                <div class="mb-2">
-                                    <span class="text-warning">
-                                        {% for i in "12345" %}
-                                            {% if forloop.counter <= user_feedback.rating %}
-                                                <i class="bi bi-star-fill"></i>
-                                            {% else %}
-                                                <i class="bi bi-star"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </span>
-                                    <span class="ms-2 text-muted">({{ user_feedback.rating }}/5)</span>
-                                </div>
-                                {% if user_feedback.comment %}
-                                    <p class="mb-1">{{ user_feedback.comment }}</p>
-                                {% else %}
-                                    <p class="mb-1 text-muted fst-italic">No comment</p>
-                                {% endif %}
-                                <small class="text-muted">Last updated: {{ user_feedback.updated_at|date:"M d, Y" }}</small>
-                            </div>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" id="edit-review-btn">
-                                <i class="bi bi-pencil me-1"></i>Edit
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Edit form (hidden by default) -->
-                    <form method="post" action="{% url 'courses:leave_feedback' course.pk %}" class="mb-4 d-none" id="review-form">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label">Edit Your Rating <span class="text-danger">*</span></label>
-                            <div class="rating-input">
-                                {% for value, label in feedback_form.rating.field.choices %}
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="rating" 
-                                               id="rating{{ value }}" value="{{ value }}"
-                                               {% if user_feedback.rating|stringformat:"s" == value %}checked{% endif %}>
-                                        <label class="form-check-label" for="rating{{ value }}">
-                                            {{ value }} <i class="bi bi-star-fill text-warning"></i>
-                                        </label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="invalid-feedback" id="rating-error">Please select a rating (1-5 stars).</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="comment" class="form-label">Comment (optional)</label>
-                            <textarea name="comment" id="comment" class="form-control" rows="2" 
-                                      placeholder="Share your experience...">{{ user_feedback.comment }}</textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="bi bi-check me-1"></i>Update Review
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="cancel-edit-btn">
-                            Cancel
-                        </button>
-                    </form>
-                    <hr>
-                {% elif can_leave_feedback %}
-                    <!-- New review form -->
-                    <form method="post" action="{% url 'courses:leave_feedback' course.pk %}" class="mb-4" id="review-form">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label">Your Rating <span class="text-danger">*</span></label>
-                            <div class="rating-input">
-                                {% for value, label in feedback_form.rating.field.choices %}
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="rating" 
-                                               id="rating{{ value }}" value="{{ value }}">
-                                        <label class="form-check-label" for="rating{{ value }}">
-                                            {{ value }} <i class="bi bi-star-fill text-warning"></i>
-                                        </label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="invalid-feedback" id="rating-error">Please select a rating (1-5 stars).</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="comment" class="form-label">Comment (optional)</label>
-                            <textarea name="comment" id="comment" class="form-control" rows="2" 
-                                      placeholder="Share your experience..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="bi bi-send me-1"></i>Submit Review
-                        </button>
-                    </form>
-                    <hr>
-                {% endif %}
-                
-                {% if feedbacks %}
-                    {% for feedback in feedbacks %}
-                        <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
-                            <div class="d-flex justify-content-between">
-                                <strong>{{ feedback.student.get_full_name|default:feedback.student.username }}</strong>
-                                <span class="text-warning">
-                                    {% for i in "12345" %}
-                                        {% if forloop.counter <= feedback.rating %}
-                                            <i class="bi bi-star-fill"></i>
-                                        {% else %}
-                                            <i class="bi bi-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
-                                </span>
-                            </div>
-                            {% if feedback.comment %}
-                                <p class="mb-1 mt-2">{{ feedback.comment }}</p>
-                            {% endif %}
-                            <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+        <!-- Edit form (hidden by default) -->
+        <form method="post" action="{% url 'courses:leave_feedback' course.pk %}" class="mb-4 d-none p-3 bg-light rounded" id="review-form">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Edit Your Rating <span class="text-danger">*</span></label>
+                <div class="rating-input">
+                    {% for value, label in feedback_form.rating.field.choices %}
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="rating" 
+                                   id="rating{{ value }}" value="{{ value }}"
+                                   {% if user_feedback.rating|stringformat:"s" == value %}checked{% endif %}>
+                            <label class="form-check-label" for="rating{{ value }}">
+                                {{ value }} <i class="bi bi-star-fill text-warning"></i>
+                            </label>
                         </div>
                     {% endfor %}
-                {% else %}
-                    <p class="text-muted text-center mb-0">No reviews yet.</p>
-                {% endif %}
+                </div>
+                <div class="invalid-feedback" id="rating-error">Please select a rating (1-5 stars).</div>
             </div>
-        </div>
-    </div>
-</div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Comment (optional)</label>
+                <textarea name="comment" id="comment" class="form-control" rows="2" 
+                          placeholder="Share your experience...">{{ user_feedback.comment }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-check me-1"></i>Update Review
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="cancel-edit-btn">
+                Cancel
+            </button>
+        </form>
+    {% elif can_leave_feedback %}
+        <!-- New review form -->
+        <form method="post" action="{% url 'courses:leave_feedback' course.pk %}" class="mb-4 p-3 bg-light rounded" id="review-form">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Your Rating <span class="text-danger">*</span></label>
+                <div class="rating-input">
+                    {% for value, label in feedback_form.rating.field.choices %}
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="rating" 
+                                   id="rating{{ value }}" value="{{ value }}">
+                            <label class="form-check-label" for="rating{{ value }}">
+                                {{ value }} <i class="bi bi-star-fill text-warning"></i>
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="invalid-feedback" id="rating-error">Please select a rating (1-5 stars).</div>
+            </div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Comment (optional)</label>
+                <textarea name="comment" id="comment" class="form-control" rows="2" 
+                          placeholder="Share your experience..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-send me-1"></i>Submit Review
+            </button>
+        </form>
+    {% endif %}
+    
+    {% if feedbacks %}
+        {% for feedback in feedbacks %}
+            <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                <div class="d-flex justify-content-between">
+                    <strong>{{ feedback.student.get_full_name|default:feedback.student.username }}</strong>
+                    <span class="text-warning">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= feedback.rating %}
+                                <i class="bi bi-star-fill"></i>
+                            {% else %}
+                                <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                {% if feedback.comment %}
+                    <p class="mb-1 mt-2">{{ feedback.comment }}</p>
+                {% endif %}
+                <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted text-center py-4">No reviews yet.</p>
+    {% endif %}
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Scroll-based active state for sidebar navigation
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.course-nav-link');
+    
+    function updateActiveNav() {
+        const scrollPos = window.scrollY + 150; // Offset for header
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            const sectionId = section.getAttribute('id');
+            
+            if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-section') === sectionId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }
+    
+    // Update on scroll
+    window.addEventListener('scroll', updateActiveNav);
+    
+    // Smooth scroll on click
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-section');
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                const offsetTop = targetSection.offsetTop - 80;
+                window.scrollTo({
+                    top: offsetTop,
+                    behavior: 'smooth'
+                });
+                // Update active state immediately
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            }
+        });
+    });
+    
     // Edit/Cancel toggle for existing reviews
     const editBtn = document.getElementById('edit-review-btn');
     const cancelBtn = document.getElementById('cancel-edit-btn');

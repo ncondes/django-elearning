@@ -7,6 +7,7 @@ from django.views.generic import CreateView, UpdateView, DetailView
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.urls import reverse_lazy
+from django.core.paginator import Paginator
 
 from .models import User, StatusUpdate
 from .forms import UserRegistrationForm, UserLoginForm, UserProfileForm, StatusUpdateForm
@@ -58,23 +59,8 @@ class CustomLogoutView(LogoutView):
 @login_required
 @never_cache
 def dashboard_view(request):
-    """User dashboard / landing page."""
-    user = request.user
-    from apps.courses.models import Course, Enrollment
-    
-    context = {}
-    
-    if user.is_teacher:
-        # Count total students across all courses
-        total_students = Enrollment.objects.filter(
-            course__teacher=user, is_active=True
-        ).values('student').distinct().count()
-        context['total_students'] = total_students
-    else:
-        # Count available courses for students
-        context['available_courses'] = Course.objects.filter(is_active=True).count()
-    
-    return render(request, 'accounts/dashboard.html', context)
+    """User dashboard - redirects to courses page (sidebar layout makes home redundant)."""
+    return redirect('courses:course_list')
 
 
 @login_required
@@ -82,7 +68,16 @@ def dashboard_view(request):
 def posts_view(request):
     """User posts / status updates page."""
     user = request.user
-    status_updates = user.status_updates.all()[:10]
+    all_posts = user.status_updates.all()
+    
+    # Recent posts (5 latest)
+    recent_posts = all_posts[:5]
+    
+    # All posts paginated (excluding the 5 recent ones shown above)
+    all_posts_list = list(all_posts[5:])
+    paginator = Paginator(all_posts_list, 10)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
     
     if request.method == 'POST':
         form = StatusUpdateForm(request.POST)
@@ -96,7 +91,9 @@ def posts_view(request):
         form = StatusUpdateForm()
     
     context = {
-        'status_updates': status_updates,
+        'recent_posts': recent_posts,
+        'page_obj': page_obj,
+        'total_posts': all_posts.count(),
         'form': form,
     }
     return render(request, 'accounts/posts.html', context)

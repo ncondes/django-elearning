@@ -1,44 +1,51 @@
-{% extends 'base.html' %}
+{% extends 'base_sidebar.html' %}
 
 {% block title %}Chat: {{ course.title }} - eLearning{% endblock %}
 
+{% block sidebar %}
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Navigation</div>
+    <a href="{% url 'courses:course_detail' course.pk %}" class="sidebar-link">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Course</span>
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-title">
+        Online Users <span id="online-count" class="sidebar-badge">0</span>
+    </div>
+    <div id="online-users-list">
+        {% for online_user in online_users %}
+            <div class="sidebar-link" style="cursor: default;" data-user-id="{{ online_user.user.id }}">
+                <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i>
+                <span>{{ online_user.user.get_full_name|default:online_user.user.username }}</span>
+            </div>
+        {% empty %}
+            <div class="sidebar-link sidebar-muted" id="no-users-message">
+                <i class="bi bi-person-x"></i>
+                <span>No users online</span>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock sidebar %}
+
+{% block breadcrumb %}
+<div class="breadcrumb-bar">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' course.pk %}">{{ course.title }}</a></li>
+            <li class="breadcrumb-item active">Chat</li>
+        </ol>
+    </nav>
+</div>
+{% endblock breadcrumb %}
+
 {% block content %}
 <div class="row">
-    <!-- Left Sidebar -->
-    <div class="col-md-3 mb-4">
-        <!-- Back Button -->
-        <div class="card mb-3">
-            <div class="card-body py-2">
-                <a href="{% url 'courses:course_detail' course.pk %}" class="text-decoration-none">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Course
-                </a>
-            </div>
-        </div>
-        
-        <!-- Online Users -->
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-people me-2"></i>Online Users <span id="online-count" class="badge bg-success ms-1">0</span></h6>
-            </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush" id="online-users-list">
-                    {% for online_user in online_users %}
-                        <li class="list-group-item py-2" data-user-id="{{ online_user.user.id }}">
-                            <i class="bi bi-circle-fill text-success me-2" style="font-size: 0.5rem;"></i>
-                            {{ online_user.user.get_full_name|default:online_user.user.username }}
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item py-2 text-muted text-center" id="no-users-message">
-                            No users online
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Chat Area -->
-    <div class="col-md-9">
+    <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>{{ course.title }} - Chat</h5>
@@ -179,13 +186,13 @@ document.addEventListener('DOMContentLoaded', function() {
         onlineCount.textContent = users.length;
         
         if (users.length === 0) {
-            onlineUsersList.innerHTML = '<li class="list-group-item py-2 text-muted text-center">No users online</li>';
+            onlineUsersList.innerHTML = '<div class="sidebar-link sidebar-muted"><i class="bi bi-person-x"></i><span>No users online</span></div>';
         } else {
             onlineUsersList.innerHTML = users.map(user => `
-                <li class="list-group-item py-2" data-user-id="${user.user_id}">
-                    <i class="bi bi-circle-fill text-success me-2" style="font-size: 0.5rem;"></i>
-                    ${escapeHtml(user.full_name)}
-                </li>
+                <div class="sidebar-link" style="cursor: default;" data-user-id="${user.user_id}">
+                    <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i>
+                    <span>${escapeHtml(user.full_name)}</span>
+                </div>
             `).join('');
         }
     }

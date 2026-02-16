@@ -1,54 +1,66 @@
-{% extends 'base.html' %}
+{% extends 'base_sidebar.html' %}
 
 {% block title %}Upload Material - eLearning{% endblock %}
 
+{% block sidebar %}
+{% with active_menu='courses' %}{% include 'includes/sidebar_menu.html' %}{% endwith %}
+{% endblock sidebar %}
+
+{% block breadcrumb %}
+<div class="breadcrumb-bar">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' course.pk %}">{{ course.title }}</a></li>
+            <li class="breadcrumb-item active">Upload Material</li>
+        </ol>
+    </nav>
+</div>
+{% endblock breadcrumb %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-upload me-2"></i>Upload Material to {{ course.title }}
-                </h5>
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-upload me-2"></i>Upload Material
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="id_title" class="form-label">Material Title</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.title.errors.0 }}
+                    </div>
+                {% endif %}
             </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="id_title" class="form-label">Material Title</label>
-                        {{ form.title }}
-                        {% if form.title.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.title.errors.0 }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="id_description" class="form-label">Description (optional)</label>
-                        {{ form.description }}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="id_file" class="form-label">File</label>
-                        {{ form.file }}
-                        {% if form.file.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.file.errors.0 }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-upload me-1"></i>Upload
-                        </button>
-                        <a href="{% url 'courses:course_detail' course.pk %}" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
+            
+            <div class="mb-3">
+                <label for="id_description" class="form-label">Description (optional)</label>
+                {{ form.description }}
             </div>
-        </div>
+            
+            <div class="mb-3">
+                <label for="id_file" class="form-label">File</label>
+                {{ form.file }}
+                {% if form.file.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.file.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-upload me-1"></i>Upload
+                </button>
+                <a href="{% url 'courses:course_detail' course.pk %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

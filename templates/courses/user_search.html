@@ -1,102 +1,107 @@
-{% extends 'base.html' %}
+{% extends 'base_sidebar.html' %}
 
 {% block title %}Search Users - eLearning{% endblock %}
 
+{% block sidebar %}
+{% include 'includes/sidebar_menu.html' %}
+{% endblock sidebar %}
+
+{% block breadcrumb %}
+<div class="breadcrumb-bar">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+            <li class="breadcrumb-item active">Search Users</li>
+        </ol>
+    </nav>
+</div>
+{% endblock breadcrumb %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-search me-2"></i>Search Users</h5>
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-search me-2"></i>Search Users</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-4">
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Search by name or username..." value="{{ query }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="type" class="form-select">
+                        <option value="">All Users</option>
+                        <option value="student" {% if user_type == 'student' %}selected{% endif %}>Students Only</option>
+                        <option value="teacher" {% if user_type == 'teacher' %}selected{% endif %}>Teachers Only</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="get" class="mb-4">
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <input type="text" name="q" class="form-control" 
-                                   placeholder="Search by name or username..." value="{{ query }}">
-                        </div>
-                        <div class="col-md-4">
-                            <select name="type" class="form-select">
-                                <option value="">All Users</option>
-                                <option value="student" {% if user_type == 'student' %}selected{% endif %}>Students Only</option>
-                                <option value="teacher" {% if user_type == 'teacher' %}selected{% endif %}>Teachers Only</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary w-100" type="submit">
-                                <i class="bi bi-search"></i> Search
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                
-                {% if query %}
-                    {% if users %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>User</th>
-                                        <th>Type</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in users %}
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    {% if user.photo %}
-                                                        <img src="{{ user.photo.url }}" alt="{{ user.username }}" 
-                                                             class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                                                    {% else %}
-                                                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" 
-                                                             style="width: 40px; height: 40px;">
-                                                            <i class="bi bi-person-fill text-white"></i>
-                                                        </div>
-                                                    {% endif %}
-                                                    <div>
-                                                        <strong>{{ user.get_full_name|default:user.username }}</strong>
-                                                        <small class="text-muted d-block">@{{ user.username }}</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge {% if user.is_teacher %}badge-teacher{% else %}badge-student{% endif %}">
-                                                    {% if user.is_teacher %}
-                                                        <i class="bi bi-person-workspace me-1"></i>Teacher
-                                                    {% else %}
-                                                        <i class="bi bi-mortarboard me-1"></i>Student
-                                                    {% endif %}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <a href="{% url 'accounts:profile' user.username %}" class="btn btn-outline-primary btn-sm">
-                                                    <i class="bi bi-person me-1"></i>View Profile
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        {% include 'includes/pagination.html' %}
-                    {% else %}
-                        <p class="text-muted text-center mb-0">No users found matching "{{ query }}".</p>
-                    {% endif %}
-                {% else %}
-                    <p class="text-muted text-center mb-0">Enter a search term to find users.</p>
-                {% endif %}
-            </div>
-        </div>
+        </form>
         
-        <div class="mt-3">
-            <a href="{% url 'courses:course_list' %}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>Back to Courses
-            </a>
-        </div>
+        {% if query %}
+            {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if user.photo %}
+                                                <img src="{{ user.photo.url }}" alt="{{ user.username }}" 
+                                                     class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" 
+                                                     style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-person-fill text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                                                <small class="text-muted d-block">@{{ user.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if user.is_teacher %}badge-teacher{% else %}badge-student{% endif %}">
+                                            {% if user.is_teacher %}
+                                                <i class="bi bi-person-workspace me-1"></i>Teacher
+                                            {% else %}
+                                                <i class="bi bi-mortarboard me-1"></i>Student
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'accounts:profile' user.username %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-person me-1"></i>View Profile
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% include 'includes/pagination.html' %}
+            {% else %}
+                <p class="text-muted text-center mb-0">No users found matching "{{ query }}".</p>
+            {% endif %}
+        {% else %}
+            <p class="text-muted text-center mb-0">Enter a search term to find users.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

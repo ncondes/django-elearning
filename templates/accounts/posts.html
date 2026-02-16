@@ -1,87 +1,164 @@
-{% extends 'base.html' %}
+{% extends 'base_sidebar.html' %}
 {% load crispy_forms_tags %}
 
 {% block title %}My Posts - eLearning{% endblock %}
 
-{% block content %}
-<div class="row">
-    <!-- User Info Sidebar -->
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <div class="profile-photo-container">
-                    <div class="profile-photo-ring {% if user.is_teacher %}teacher-ring{% else %}student-ring{% endif %}">
-                        {% if user.photo %}
-                            <img src="{{ user.photo.url }}" alt="{{ user.username }}" class="profile-photo">
-                        {% else %}
-                            <div class="profile-photo-placeholder">
-                                <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <span class="role-badge-overlay {% if user.is_teacher %}teacher-badge{% else %}student-badge{% endif %}">
-                        {% if user.is_teacher %}
-                            <i class="bi bi-person-workspace me-1"></i>Teacher
-                        {% else %}
-                            <i class="bi bi-mortarboard me-1"></i>Student
-                        {% endif %}
-                    </span>
+{% block sidebar %}
+{% with active_menu='posts' %}{% include 'includes/sidebar_menu.html' %}{% endwith %}
+
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Profile</div>
+    <div class="px-3 py-2 text-center">
+        <div class="mb-2">
+            {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="{{ user.username }}" 
+                     style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3);">
+            {% else %}
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-person-fill" style="font-size: 2rem; color: rgba(255,255,255,0.8);"></i>
                 </div>
-                
-                <h4>{{ user.get_full_name|default:user.username }}</h4>
-                <p class="text-muted">@{{ user.username }}</p>
-                
-                {% if user.bio %}
-                    <p class="text-muted">{{ user.bio }}</p>
-                {% endif %}
-                
-                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-pencil me-1"></i>Edit Profile
-                </a>
-            </div>
+            {% endif %}
         </div>
+        <div style="color: white; font-weight: 500;">{{ user.get_full_name|default:user.username }}</div>
+        <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">@{{ user.username }}</div>
+        <span class="badge mt-2" style="background: rgba(255,255,255,0.2); color: white;">
+            {% if user.is_teacher %}
+                <i class="bi bi-person-workspace me-1"></i>Teacher
+            {% else %}
+                <i class="bi bi-mortarboard me-1"></i>Student
+            {% endif %}
+        </span>
     </div>
-    
-    <!-- Main Content -->
-    <div class="col-md-8">
-        <!-- Status Update Form -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-chat-square-text me-2"></i>Post Status Update</h5>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form.content }}
-                    <button type="submit" class="btn btn-primary mt-2">
-                        <i class="bi bi-send me-1"></i>Post
-                    </button>
-                </form>
-            </div>
+    <a href="{% url 'accounts:profile_edit' %}" class="sidebar-link sidebar-action">
+        <i class="bi bi-pencil"></i>
+        <span>Edit Profile</span>
+    </a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Quick Stats</div>
+    <div class="px-3 py-2">
+        <div class="d-flex justify-content-between mb-2" style="color: rgba(255,255,255,0.8); font-size: 0.85rem;">
+            <span>Posts</span>
+            <span style="font-weight: 500;">{{ user.status_updates.count }}</span>
         </div>
-        
-        <!-- Status Updates -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Updates</h5>
-            </div>
-            <div class="card-body">
-                {% if status_updates %}
-                    {% for status in status_updates %}
-                        <div class="status-update">
-                            <p class="mb-1">{{ status.content }}</p>
-                            <small class="timestamp">
-                                <i class="bi bi-clock me-1"></i>{{ status.created_at|timesince }} ago
-                            </small>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted text-center mb-0">
-                        <i class="bi bi-chat-square me-2"></i>No status updates yet. Post your first one!
-                    </p>
-                {% endif %}
-            </div>
+        {% if user.is_teacher %}
+        <div class="d-flex justify-content-between mb-2" style="color: rgba(255,255,255,0.8); font-size: 0.85rem;">
+            <span>Courses</span>
+            <span style="font-weight: 500;">{{ user.courses_teaching.count }}</span>
         </div>
+        {% else %}
+        <div class="d-flex justify-content-between mb-2" style="color: rgba(255,255,255,0.8); font-size: 0.85rem;">
+            <span>Enrolled</span>
+            <span style="font-weight: 500;">{{ user.enrollments.count }}</span>
+        </div>
+        {% endif %}
     </div>
 </div>
+{% endblock sidebar %}
+
+{% block breadcrumb %}
+<div class="breadcrumb-bar">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">My Posts</li>
+        </ol>
+    </nav>
+</div>
+{% endblock breadcrumb %}
+
+{% block content %}
+<!-- Status Update Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-chat-square-text me-2"></i>Post Status Update</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.content }}
+            <button type="submit" class="btn btn-primary mt-2">
+                <i class="bi bi-send me-1"></i>Post
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Recent Updates (5 latest) -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Updates</h5>
+    </div>
+    <div class="card-body">
+        {% if recent_posts %}
+            {% for status in recent_posts %}
+                <div class="status-update">
+                    <p class="mb-1">{{ status.content }}</p>
+                    <small class="timestamp">
+                        <i class="bi bi-clock me-1"></i>{{ status.created_at|timesince }} ago
+                    </small>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted text-center mb-0">
+                <i class="bi bi-chat-square me-2"></i>No status updates yet. Post your first one!
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- All Posts (paginated) -->
+{% if page_obj.paginator.count > 0 or total_posts > 5 %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-archive me-2"></i>All Posts</h5>
+        <span class="badge bg-secondary">{{ total_posts }} total</span>
+    </div>
+    <div class="card-body">
+        {% if page_obj.object_list %}
+            {% for status in page_obj %}
+                <div class="status-update">
+                    <p class="mb-1">{{ status.content }}</p>
+                    <small class="timestamp">
+                        <i class="bi bi-clock me-1"></i>{{ status.created_at|timesince }} ago
+                    </small>
+                </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Posts pagination" class="mt-4">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <p class="text-muted text-center mb-0">
+                <i class="bi bi-check-circle me-2"></i>All your recent posts are shown above.
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

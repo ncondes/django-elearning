@@ -351,34 +351,35 @@ awd-final-coursework/
 **Goal**: Implement WebSocket chat and notification system.
 
 #### 3.1 Notifications App
-- [ ] Create Notification model
-- [ ] Create signals for:
+- [x] Create Notification model
+- [x] Create signals for:
   - Student enrollment → notify teacher
   - New material → notify enrolled students
-- [ ] Create notification list view
-- [ ] Mark notifications as read
+  - Course rating → notify teacher
+- [x] Create notification list view
+- [x] Mark notifications as read
 - [ ] Write tests
 
 #### 3.2 Chat App (WebSockets)
-- [ ] Configure Django Channels
-- [ ] Set up ASGI application
-- [ ] Create ChatRoom and Message models
-- [ ] Create WebSocket consumer for chat
-- [ ] Create chat room view
-- [ ] Implement JavaScript WebSocket client
-- [ ] Features:
+- [x] Configure Django Channels
+- [x] Set up ASGI application
+- [x] Create ChatRoom and Message models
+- [x] Create WebSocket consumer for chat
+- [x] Create chat room view
+- [x] Implement JavaScript WebSocket client
+- [x] Features:
   - Real-time message sending/receiving
   - Message history
-  - Online user indicators (optional)
+  - Online user indicators
 - [ ] Write tests for consumers
 
 #### 3.3 Integration & Polish
-- [ ] Connect chat rooms to courses (optional)
-- [ ] Add real-time notification delivery (optional)
-- [ ] UI/UX improvements
-- [ ] Responsive design check
+- [x] Connect chat rooms to courses
+- [x] Add real-time notification delivery (WebSocket)
+- [x] UI/UX improvements (docs-style sidebar layout)
+- [x] Responsive design check
 
-**Deliverables Phase 3**:
+**Deliverables Phase 3**: ✅ COMPLETED
 - Working notification system
 - Real-time chat via WebSockets
 - Complete integration of all features
