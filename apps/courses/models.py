@@ -3,6 +3,15 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
 
+# Get storage for raw files (PDFs/docs)
+# In production, uses Cloudinary; in development, uses default file storage
+def get_material_storage():
+    from django.conf import settings
+    if hasattr(settings, 'CLOUDINARY_STORAGE') and settings.CLOUDINARY_STORAGE.get('CLOUD_NAME'):
+        from cloudinary_storage.storage import RawMediaCloudinaryStorage
+        return RawMediaCloudinaryStorage()
+    return None  # Uses DEFAULT_FILE_STORAGE
+
 
 def course_material_path(instance, filename):
     """Generate upload path: elearning/courses/{course_slug}/{filename}"""
@@ -53,7 +62,10 @@ class CourseMaterial(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    file = models.FileField(upload_to=course_material_path)
+    file = models.FileField(
+        upload_to=course_material_path,
+        storage=get_material_storage
+    )
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
