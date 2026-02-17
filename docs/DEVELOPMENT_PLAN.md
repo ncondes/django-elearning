@@ -547,56 +547,82 @@ python manage.py createsuperuser
 
 ## Deployment Notes
 
-### Required Dependencies for Production
+### Deployment Platform: Railway
 
-When deploying, ensure these dependencies are in `requirements.txt`:
+The application is deployed on [Railway](https://railway.app) with the following services:
+- **Web Service**: Django + Daphne (ASGI)
+- **PostgreSQL**: Database
+- **Redis**: WebSocket message broker
+
+**Live URL**: `https://django-elearning-production.up.railway.app`
+
+### Required Dependencies for Production
 
 | Package | Purpose |
 |---------|---------|
-| `daphne>=4.0` | ASGI server for WebSocket support (Django Channels) |
+| `daphne>=4.0` | ASGI server for WebSocket support |
 | `channels>=4.0` | WebSocket framework |
 | `channels-redis>=4.1` | Redis backend for Channels |
-
-**Why Daphne?**
-- Django Channels requires an ASGI server, not WSGI (like Gunicorn)
-- Daphne handles both HTTP and WebSocket connections
-- It's listed in `INSTALLED_APPS` as `'daphne'` and must be installed
+| `dj-database-url>=2.0` | Parse DATABASE_URL for PostgreSQL |
+| `psycopg2-binary>=2.9` | PostgreSQL driver |
+| `whitenoise>=6.0` | Serve static files in production |
 
 ### Build Command
 
 ```bash
-pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+pip install -r requirements.txt && python manage.py collectstatic --noinput
 ```
+
+**Note**: Migrations run at startup, not build time (internal DB hostname not available during build).
 
 ### Start Command
 
 ```bash
-daphne -b 0.0.0.0 -p $PORT config.asgi:application
+python manage.py migrate && daphne -b 0.0.0.0 -p $PORT config.asgi:application
 ```
 
-### Environment Variables
+### Environment Variables (Railway)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SECRET_KEY` | Yes | Django secret key |
 | `DJANGO_SETTINGS_MODULE` | Yes | `config.settings.production` |
-| `REDIS_HOST` | Yes | Redis server hostname |
-| `REDIS_PORT` | Yes | Redis server port (default: 6379) |
-| `DATABASE_URL` | Prod | PostgreSQL connection string |
-| `ALLOWED_HOSTS` | Prod | Comma-separated list of domains |
+| `SECRET_KEY` | Yes | Django secret key (generate with `get_random_secret_key()`) |
+| `DATABASE_URL` | Yes | `${{Postgres.DATABASE_URL}}` (Railway reference) |
+| `REDIS_URL` | Yes | `${{Redis.REDIS_URL}}` (Railway reference) |
+
+### Production Settings (`config/settings/production.py`)
+
+Key configurations:
+- `ALLOWED_HOSTS`: Includes `.railway.app` and `.up.railway.app`
+- `CSRF_TRUSTED_ORIGINS`: HTTPS origins for Railway domains
+- `STATICFILES_STORAGE`: WhiteNoise for static file serving
+- `CHANNEL_LAYERS`: Uses `REDIS_URL` for WebSocket support
+- `DATABASES`: Uses `dj_database_url` to parse `DATABASE_URL`
 
 ### Common Deployment Issues
 
 1. **`ModuleNotFoundError: No module named 'daphne'`**
    - Add `daphne>=4.0` to `requirements.txt`
 
-2. **WebSocket connection fails**
-   - Ensure Redis is running and accessible
-   - Verify `REDIS_HOST` and `REDIS_PORT` are set correctly
+2. **`DisallowedHost` error**
+   - Ensure `DJANGO_SETTINGS_MODULE=config.settings.production`
+   - Production settings include Railway domains in `ALLOWED_HOSTS`
 
-3. **Static files not loading**
-   - Run `collectstatic` in build command
-   - Use WhiteNoise middleware for serving static files
+3. **CSRF verification failed**
+   - Add Railway domain to `CSRF_TRUSTED_ORIGINS` in production settings
+
+4. **Database connection error during build**
+   - Move `migrate` to start command (not build command)
+   - Internal hostnames only work at runtime
+
+5. **Static files not loading (MIME type error)**
+   - Add `whitenoise>=6.0` to requirements
+   - Add `WhiteNoiseMiddleware` after `SecurityMiddleware`
+   - Set `STATICFILES_STORAGE` to WhiteNoise storage
+
+6. **WebSocket connection fails**
+   - Add Redis service in Railway
+   - Link `REDIS_URL` to web service
 
 ---
 
