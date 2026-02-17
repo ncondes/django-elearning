@@ -545,11 +545,58 @@ python manage.py createsuperuser
 
 ---
 
-## Next Steps
+## Deployment Notes
 
-1. **Read and approve this plan**
-2. **Start Phase 1.1**: Restructure project and install dependencies
-3. **Proceed sequentially** through each phase
+### Required Dependencies for Production
+
+When deploying, ensure these dependencies are in `requirements.txt`:
+
+| Package | Purpose |
+|---------|---------|
+| `daphne>=4.0` | ASGI server for WebSocket support (Django Channels) |
+| `channels>=4.0` | WebSocket framework |
+| `channels-redis>=4.1` | Redis backend for Channels |
+
+**Why Daphne?**
+- Django Channels requires an ASGI server, not WSGI (like Gunicorn)
+- Daphne handles both HTTP and WebSocket connections
+- It's listed in `INSTALLED_APPS` as `'daphne'` and must be installed
+
+### Build Command
+
+```bash
+pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+```
+
+### Start Command
+
+```bash
+daphne -b 0.0.0.0 -p $PORT config.asgi:application
+```
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SECRET_KEY` | Yes | Django secret key |
+| `DJANGO_SETTINGS_MODULE` | Yes | `config.settings.production` |
+| `REDIS_HOST` | Yes | Redis server hostname |
+| `REDIS_PORT` | Yes | Redis server port (default: 6379) |
+| `DATABASE_URL` | Prod | PostgreSQL connection string |
+| `ALLOWED_HOSTS` | Prod | Comma-separated list of domains |
+
+### Common Deployment Issues
+
+1. **`ModuleNotFoundError: No module named 'daphne'`**
+   - Add `daphne>=4.0` to `requirements.txt`
+
+2. **WebSocket connection fails**
+   - Ensure Redis is running and accessible
+   - Verify `REDIS_HOST` and `REDIS_PORT` are set correctly
+
+3. **Static files not loading**
+   - Run `collectstatic` in build command
+   - Use WhiteNoise middleware for serving static files
 
 ---
 
