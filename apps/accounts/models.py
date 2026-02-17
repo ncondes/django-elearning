@@ -4,6 +4,12 @@ from django.urls import reverse
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+try:
+    from cloudinary_storage.storage import MediaCloudinaryStorage
+    media_storage = MediaCloudinaryStorage()
+except ImportError:
+    media_storage = None
+
 
 def profile_photo_path(instance, filename):
     """Generate upload path: elearning/profiles/{username}/{filename}"""
@@ -25,6 +31,7 @@ class User(AbstractUser):
     )
     photo = models.ImageField(
         upload_to=profile_photo_path,
+        storage=media_storage,
         blank=True,
         null=True,
     )
@@ -105,4 +112,9 @@ def delete_old_profile_photo(sender, instance, **kwargs):
         return
     
     if old_user.photo and old_user.photo != instance.photo:
-        old_user.photo.delete(save=False)
+        # Check if the file actually exists in storage before deleting
+        try:
+            if old_user.photo.storage.exists(old_user.photo.name):
+                old_user.photo.delete(save=False)
+        except Exception:
+            pass
