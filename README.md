@@ -6,11 +6,14 @@ A Django-based eLearning platform supporting students and teachers, with course 
 
 - **User Authentication**: Register, login, logout with role selection (Student/Teacher)
 - **User Profiles**: View and edit profiles with bio and photo
-- **Status Updates**: Post updates to your home page
+- **Status Updates**: Post updates with Markdown support
 - **Course Management**: Teachers can create/edit courses, upload materials
 - **Enrollment System**: Students can enroll in courses and leave feedback
+- **Real-time Chat**: Course chat rooms with WebSocket support
+- **Notifications**: Real-time notifications for enrollments, materials, ratings
+- **Markdown Support**: Live preview editor with XSS sanitization
 - **User Search**: Teachers can search for students and other teachers
-- **REST API**: Full API for courses and enrollments
+- **REST API**: Full API with Swagger documentation (`/api/docs/`)
 - **Responsive Design**: Bootstrap 5 with custom minimalistic styling
 
 ## Tech Stack
@@ -185,16 +188,22 @@ Options:
 
 ## Project Structure
 
-```
+```text
 ├── apps/
-│   └── accounts/          # User authentication and profiles
+│   ├── accounts/          # User authentication and profiles
+│   ├── courses/           # Course management and enrollment
+│   ├── notifications/     # Real-time notifications
+│   └── chat/              # WebSocket chat rooms
 ├── config/
 │   └── settings/          # Django settings (base, development, production)
 ├── static/
 │   └── css/               # Custom styles
 ├── templates/
 │   ├── accounts/          # Auth templates (login, register, profile)
-│   └── base.html          # Base template
+│   ├── courses/           # Course templates
+│   ├── notifications/     # Notification templates
+│   ├── chat/              # Chat templates
+│   └── base_sidebar.html  # Main layout with sidebar
 ├── manage.py
 └── requirements.txt
 ```

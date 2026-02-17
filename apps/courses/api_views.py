@@ -38,7 +38,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     - Update/Delete: Course owner only
     """
     
-    permission_classes = [permissions.IsAuthenticated, IsTeacherOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsTeacherOrReadOnly, IsCourseOwner]
     
     def get_queryset(self):
         queryset = Course.objects.filter(is_active=True)

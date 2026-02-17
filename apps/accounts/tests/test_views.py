@@ -89,7 +89,7 @@ class LoginViewTest(TestCase):
 
 
 class HomeViewTest(TestCase):
-    """Tests for the home view."""
+    """Tests for the home view (redirects to courses)."""
     
     def setUp(self):
         self.client = Client()
@@ -105,17 +105,42 @@ class HomeViewTest(TestCase):
         response = self.client.get(self.home_url)
         self.assertEqual(response.status_code, 302)  # Redirect to login
     
-    def test_home_page_loads_for_authenticated_user(self):
-        """Test that home page loads for authenticated users."""
+    def test_home_redirects_to_courses(self):
+        """Test that home page redirects to courses for authenticated users."""
         self.client.login(username='testuser', password='testpass123')
         response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 302)  # Redirects to courses
+        self.assertIn('courses', response.url)
+
+
+class PostsViewTest(TestCase):
+    """Tests for the posts view."""
+    
+    def setUp(self):
+        self.client = Client()
+        self.posts_url = reverse('accounts:posts')
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@test.com',
+            password='testpass123',
+        )
+    
+    def test_posts_requires_login(self):
+        """Test that posts page requires authentication."""
+        response = self.client.get(self.posts_url)
+        self.assertEqual(response.status_code, 302)  # Redirect to login
+    
+    def test_posts_page_loads_for_authenticated_user(self):
+        """Test that posts page loads for authenticated users."""
+        self.client.login(username='testuser', password='testpass123')
+        response = self.client.get(self.posts_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'accounts/home.html')
+        self.assertTemplateUsed(response, 'accounts/posts.html')
     
     def test_post_status_update(self):
         """Test posting a status update."""
         self.client.login(username='testuser', password='testpass123')
-        response = self.client.post(self.home_url, {
+        response = self.client.post(self.posts_url, {
             'content': 'This is my status update!',
         })
         self.assertEqual(response.status_code, 302)  # Redirect after post

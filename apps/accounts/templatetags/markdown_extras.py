@@ -5,11 +5,13 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
+# Safe HTML tags (no img, iframe, script for XSS protection)
 ALLOWED_TAGS = [
     'p', 'br', 'strong', 'em', 'code', 'pre', 'ul', 'ol', 'li',
     'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'hr'
 ]
 
+# Only allow safe link attributes
 ALLOWED_ATTRIBUTES = {
     'a': ['href', 'title', 'rel'],
 }

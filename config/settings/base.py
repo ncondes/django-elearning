@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     
     # Third-party apps
     'rest_framework',
+    'drf_spectacular',
     'crispy_forms',
     'crispy_bootstrap5',
     'channels',
@@ -143,4 +144,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# DRF Spectacular (OpenAPI/Swagger)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'eLearning Platform API',
+    'DESCRIPTION': 'REST API for the eLearning platform - courses, enrollments, and user management.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
 }
