@@ -10,7 +10,13 @@ DEBUG = False
 
 # Allow Railway domains and custom domains from environment
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
-ALLOWED_HOSTS += ['.railway.app', '.up.railway.app']
+ALLOWED_HOSTS += [
+    '.railway.app',
+    '.up.railway.app',
+    'django-elearning-production.up.railway.app',
+]
+# Remove empty strings from ALLOWED_HOSTS
+ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 
 # CSRF trusted origins for Railway
 CSRF_TRUSTED_ORIGINS = [
