@@ -53,5 +53,8 @@ if REDIS_URL:
         },
     }
 
+# Static files with WhiteNoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Secret key from environment
 SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
