@@ -1,6 +1,13 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.text import slugify
+
+
+def course_material_path(instance, filename):
+    """Generate upload path: elearning/courses/{course_slug}/{filename}"""
+    course_slug = slugify(instance.course.title)
+    return f'elearning/courses/{course_slug}/{filename}'
 
 
 class Course(models.Model):
@@ -46,7 +53,7 @@ class CourseMaterial(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    file = models.FileField(upload_to='course_materials/')
+    file = models.FileField(upload_to=course_material_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
