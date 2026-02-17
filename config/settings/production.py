@@ -22,6 +22,7 @@ ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app',
     'https://*.up.railway.app',
+    'https://django-elearning-production.up.railway.app',
 ]
 
 # Security settings

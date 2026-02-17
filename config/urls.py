@@ -18,9 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
+
+def root_redirect(request):
+    """Redirect root URL to posts (authenticated) or login (unauthenticated)."""
+    if request.user.is_authenticated:
+        return redirect('accounts:posts')
+    return redirect('accounts:login')
+
 urlpatterns = [
+    path('', root_redirect, name='root'),
     path('admin/', admin.site.urls),
     path('accounts/', include('apps.accounts.urls')),
     path('courses/', include('apps.courses.urls')),
