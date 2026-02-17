@@ -1,6 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
+
+def profile_photo_path(instance, filename):
+    """Generate upload path: elearning/profiles/{username}/{filename}"""
+    return f'elearning/profiles/{instance.username}/{filename}'
 
 
 class User(AbstractUser):
@@ -17,7 +24,7 @@ class User(AbstractUser):
         default=UserType.STUDENT,
     )
     photo = models.ImageField(
-        upload_to='profile_photos/',
+        upload_to=profile_photo_path,
         blank=True,
         null=True,
     )
@@ -84,3 +91,18 @@ class StatusUpdate(models.Model):
 
     def __str__(self):
         return f"{self.user.username}: {self.content[:50]}"
+
+
+@receiver(pre_save, sender=User)
+def delete_old_profile_photo(sender, instance, **kwargs):
+    """Delete old profile photo from storage when a new one is uploaded."""
+    if not instance.pk:
+        return
+    
+    try:
+        old_user = User.objects.get(pk=instance.pk)
+    except User.DoesNotExist:
+        return
+    
+    if old_user.photo and old_user.photo != instance.photo:
+        old_user.photo.delete(save=False)
