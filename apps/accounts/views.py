@@ -120,10 +120,12 @@ class ProfileEditView(UpdateView):
     model = User
     form_class = UserProfileForm
     template_name = 'accounts/profile_edit.html'
-    success_url = reverse_lazy('accounts:dashboard')
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy('accounts:profile', kwargs={'username': self.request.user.username})
 
     def form_valid(self, form):
         messages.success(self.request, 'Profile updated successfully!')

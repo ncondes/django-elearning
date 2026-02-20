@@ -3,12 +3,16 @@ from django.db import models
 from django.urls import reverse
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django.conf import settings
 
-try:
-    from cloudinary_storage.storage import MediaCloudinaryStorage
-    media_storage = MediaCloudinaryStorage()
-except ImportError:
-    media_storage = None
+# Only use Cloudinary storage in production (when CLOUDINARY_STORAGE is configured)
+media_storage = None
+if hasattr(settings, 'CLOUDINARY_STORAGE') and settings.CLOUDINARY_STORAGE.get('CLOUD_NAME'):
+    try:
+        from cloudinary_storage.storage import MediaCloudinaryStorage
+        media_storage = MediaCloudinaryStorage()
+    except ImportError:
+        pass
 
 
 def profile_photo_path(instance, filename):

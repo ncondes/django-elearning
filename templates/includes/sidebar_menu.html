@@ -14,3 +14,34 @@
         <span>Notifications</span>
     </a>
 </div>
+
+{% if user.is_authenticated %}
+<div class="sidebar-section">
+    <div class="sidebar-section-title">Profile</div>
+    <div class="px-3 py-3 text-center">
+        <a href="{% url 'accounts:profile' user.username %}" class="text-decoration-none">
+            {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="{{ user.username }}" 
+                     style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3);">
+            {% else %}
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-person-fill" style="font-size: 2rem; color: rgba(255,255,255,0.8);"></i>
+                </div>
+            {% endif %}
+        </a>
+        <div class="mt-2">
+            <a href="{% url 'accounts:profile' user.username %}" style="color: white; font-weight: 500; text-decoration: none;">
+                {{ user.get_full_name|default:user.username }}
+            </a>
+        </div>
+        <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">@{{ user.username }}</div>
+        <span class="badge mt-2" style="background: rgba(255,255,255,0.2); color: white;">
+            {% if user.is_teacher %}
+                <i class="bi bi-person-workspace me-1"></i>Teacher
+            {% else %}
+                <i class="bi bi-mortarboard me-1"></i>Student
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endif %}

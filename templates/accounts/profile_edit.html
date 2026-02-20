@@ -40,15 +40,30 @@
                 {{ form.email|as_crispy_field }}
             </div>
             
-            <div class="mb-3">
+            <div class="mb-4">
                 <label class="form-label">Profile Photo</label>
-                {% if user.photo %}
-                    <div class="mb-2">
-                        <img src="{{ user.photo.url }}" alt="Current photo" class="profile-photo-sm">
-                        <span class="ms-2 text-muted">Current photo</span>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="position-relative">
+                        {% if user.photo %}
+                            <img src="{{ user.photo.url }}" alt="Current photo" 
+                                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e9ecef;">
+                        {% else %}
+                            <div style="width: 100px; height: 100px; border-radius: 50%; background: #e9ecef; display: flex; align-items: center; justify-content: center; border: 3px solid #dee2e6;">
+                                <i class="bi bi-person-fill" style="font-size: 3rem; color: #adb5bd;"></i>
+                            </div>
+                        {% endif %}
                     </div>
-                {% endif %}
-                {{ form.photo }}
+                    <div class="flex-grow-1">
+                        <div class="mb-2">
+                            <label for="id_photo" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-camera me-1"></i>
+                                {% if user.photo %}Change Photo{% else %}Upload Photo{% endif %}
+                            </label>
+                            <input type="file" name="photo" id="id_photo" class="d-none" accept="image/*" onchange="previewPhoto(this)">
+                        </div>
+                        <p class="text-muted small mb-0">Recommended: Square image, at least 200x200 pixels</p>
+                    </div>
+                </div>
             </div>
             
             <div class="mb-3">
@@ -66,4 +81,22 @@
         </form>
     </div>
 </div>
+
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const container = input.closest('.mb-4').querySelector('.position-relative');
+            container.innerHTML = `<img src="${e.target.result}" alt="New photo" 
+                style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #4a90d9;">`;
+            const label = input.previousElementSibling;
+            label.innerHTML = '<i class="bi bi-check-circle me-1"></i>Photo Selected';
+            label.classList.remove('btn-outline-primary');
+            label.classList.add('btn-success');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 {% endblock %}

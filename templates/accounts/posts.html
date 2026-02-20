@@ -8,35 +8,6 @@
 {% with active_menu='posts' %}{% include 'includes/sidebar_menu.html' %}{% endwith %}
 
 <div class="sidebar-section">
-    <div class="sidebar-section-title">Profile</div>
-    <div class="px-3 py-2 text-center">
-        <div class="mb-2">
-            {% if user.photo %}
-                <img src="{{ user.photo.url }}" alt="{{ user.username }}" 
-                     style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3);">
-            {% else %}
-                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-person-fill" style="font-size: 2rem; color: rgba(255,255,255,0.8);"></i>
-                </div>
-            {% endif %}
-        </div>
-        <div style="color: white; font-weight: 500;">{{ user.get_full_name|default:user.username }}</div>
-        <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">@{{ user.username }}</div>
-        <span class="badge mt-2" style="background: rgba(255,255,255,0.2); color: white;">
-            {% if user.is_teacher %}
-                <i class="bi bi-person-workspace me-1"></i>Teacher
-            {% else %}
-                <i class="bi bi-mortarboard me-1"></i>Student
-            {% endif %}
-        </span>
-    </div>
-    <a href="{% url 'accounts:profile_edit' %}" class="sidebar-link sidebar-action">
-        <i class="bi bi-pencil"></i>
-        <span>Edit Profile</span>
-    </a>
-</div>
-
-<div class="sidebar-section">
     <div class="sidebar-section-title">Quick Stats</div>
     <div class="px-3 py-2">
         <div class="d-flex justify-content-between mb-2" style="color: rgba(255,255,255,0.8); font-size: 0.85rem;">

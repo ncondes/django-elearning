@@ -3,12 +3,14 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
 
-# Import RawMediaCloudinaryStorage for PDFs/docs in production
-try:
-    from cloudinary_storage.storage import RawMediaCloudinaryStorage
-    raw_storage = RawMediaCloudinaryStorage()
-except ImportError:
-    raw_storage = None
+# Only use Cloudinary storage in production (when CLOUDINARY_STORAGE is configured)
+raw_storage = None
+if hasattr(settings, 'CLOUDINARY_STORAGE') and settings.CLOUDINARY_STORAGE.get('CLOUD_NAME'):
+    try:
+        from cloudinary_storage.storage import RawMediaCloudinaryStorage
+        raw_storage = RawMediaCloudinaryStorage()
+    except ImportError:
+        pass
 
 
 

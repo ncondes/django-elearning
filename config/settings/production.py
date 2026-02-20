@@ -8,6 +8,12 @@ from .base import *
 
 DEBUG = False
 
+# Add Cloudinary apps for production
+INSTALLED_APPS += [
+    'cloudinary_storage',
+    'cloudinary',
+]
+
 # Allow Railway domains and custom domains from environment
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 ALLOWED_HOSTS += [
