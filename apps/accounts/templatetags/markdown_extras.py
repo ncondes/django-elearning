@@ -1,3 +1,4 @@
+import re
 import markdown
 import bleach
 from django import template
@@ -28,16 +29,30 @@ def render_markdown(value):
         return ''
     
     # Convert markdown to HTML
-    md = markdown.Markdown(extensions=['fenced_code', 'nl2br'])
+    md = markdown.Markdown(extensions=['fenced_code', 'nl2br', 'codehilite'])
     html = md.convert(value)
     
     # Sanitize HTML - only allow safe tags
+    # Use protocols to allow standard link protocols
     clean_html = bleach.clean(
         html,
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRIBUTES,
         strip=True
     )
+    
+    # Unescape quotes inside code/pre tags that bleach escaped
+    # This fixes the &quot; issue in code blocks
+    def unescape_code_content(match):
+        content = match.group(1)
+        # Unescape HTML entities that shouldn't be escaped in code
+        content = content.replace('&quot;', '"')
+        content = content.replace('&amp;', '&')
+        content = content.replace('&lt;', '<')
+        content = content.replace('&gt;', '>')
+        return f'<code>{content}</code>'
+    
+    clean_html = re.sub(r'<code>([^<]*)</code>', unescape_code_content, clean_html)
     
     # Add rel="nofollow" to links for security
     clean_html = bleach.linkify(

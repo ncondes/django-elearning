@@ -118,7 +118,7 @@ class PostsViewTest(TestCase):
     
     def setUp(self):
         self.client = Client()
-        self.posts_url = reverse('accounts:posts')
+        self.posts_url = reverse('posts')
         self.user = User.objects.create_user(
             username='testuser',
             email='test@test.com',

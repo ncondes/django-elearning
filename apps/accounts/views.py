@@ -86,7 +86,7 @@ def posts_view(request):
             status.user = user
             status.save()
             messages.success(request, 'Status update posted!')
-            return redirect('accounts:posts')
+            return redirect('posts')
     else:
         form = StatusUpdateForm()
     

@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error - eLearning</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #374151;
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 500px;
+        }
+        
+        .error-icon {
+            font-size: 5rem;
+            color: #ef4444;
+            margin-bottom: 1.5rem;
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 700;
+            color: #ef4444;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+        
+        .error-message {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #5a9bd5;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .back-btn:hover {
+            background: #4a8bc5;
+            color: white;
+        }
+        
+        .brand {
+            margin-top: 3rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+        
+        .brand i {
+            color: #5a9bd5;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <i class="bi bi-exclamation-triangle error-icon"></i>
+        <div class="error-code">500</div>
+        <h1 class="error-title">Server Error</h1>
+        <p class="error-message">
+            Something went wrong on our end. Please try again later.
+        </p>
+        <a href="/" class="back-btn">
+            <i class="bi bi-house"></i>
+            Back to Home
+        </a>
+        <div class="brand">
+            <i class="bi bi-mortarboard-fill"></i> eLearning
+        </div>
+    </div>
+</body>
+</html>

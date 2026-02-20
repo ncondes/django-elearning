@@ -19,17 +19,21 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
+from apps.accounts.views import posts_view
 
 
 def root_redirect(request):
     """Redirect root URL to posts (authenticated) or login (unauthenticated)."""
     if request.user.is_authenticated:
-        return redirect('accounts:posts')
+        return redirect('posts')
     return redirect('accounts:login')
 
 urlpatterns = [
     path('', root_redirect, name='root'),
+    path('posts/', login_required(posts_view), name='posts'),
     path('admin/', admin.site.urls),
     path('accounts/', include('apps.accounts.urls')),
     path('courses/', include('apps.courses.urls')),
