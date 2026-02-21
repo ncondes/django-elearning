@@ -15,13 +15,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
         
-        # Check if user has access to this chat room
         has_access = await self.check_access()
         if not has_access:
             await self.close()
             return
         
-        # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -29,10 +27,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         await self.accept()
         
-        # Add user to online users
         await self.add_online_user()
         
-        # Notify others that user joined
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -43,7 +39,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
         
-        # Send current online users to the new user
         online_users = await self.get_online_users()
         await self.send(text_data=json.dumps({
             'type': 'online_users',
@@ -52,10 +47,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     async def disconnect(self, close_code):
         if hasattr(self, 'user') and self.user.is_authenticated:
-            # Remove user from online users
             await self.remove_online_user()
             
-            # Notify others that user left
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -65,7 +58,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
         
-        # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -78,10 +70,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if message_type == 'chat_message':
             content = data.get('message', '').strip()
             if content:
-                # Save message to database
                 message_data = await self.save_message(content)
                 
-                # Broadcast message to room
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -95,7 +85,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }
                 )
                 
-                # Notify users not in the chat room (for badge updates)
                 await self.notify_absent_users(content, message_data)
     
     async def chat_message(self, event):
@@ -137,11 +126,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room = ChatRoom.objects.get(id=self.room_id)
             course = room.course
             
-            # Teacher always has access
             if course.teacher == self.user:
                 return True
             
-            # Check if student is enrolled
             return Enrollment.objects.filter(
                 student=self.user,
                 course=course,
@@ -209,7 +196,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         absent_user_ids = await self.get_absent_user_ids()
         
         for user_id in absent_user_ids:
-            # Send to user's personal chat notification group
             await self.channel_layer.group_send(
                 f'chat_notifications_{user_id}',
                 {
@@ -232,24 +218,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room = ChatRoom.objects.get(id=self.room_id)
             course = room.course
             
-            # Get all users with access
             user_ids = set()
-            
-            # Add teacher
             user_ids.add(course.teacher_id)
             
-            # Add enrolled students
             enrolled_ids = Enrollment.objects.filter(
                 course=course,
                 is_active=True,
                 is_blocked=False
             ).values_list('student_id', flat=True)
             user_ids.update(enrolled_ids)
-            
-            # Remove sender
             user_ids.discard(self.user.id)
             
-            # Remove users currently online in the room
             online_ids = set(OnlineUser.objects.filter(room=room).values_list('user_id', flat=True))
             user_ids -= online_ids
             
@@ -269,7 +248,6 @@ class ChatNotificationConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
         self.group_name = f'chat_notifications_{self.user.id}'
         
-        # Join user's personal notification group
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name

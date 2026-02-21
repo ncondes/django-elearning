@@ -4,7 +4,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.http import HttpResponseForbidden
 from django.db.models import Q
 
 from .models import Course, CourseMaterial, Enrollment, CourseFeedback
@@ -60,18 +59,15 @@ class CourseDetailView(LoginRequiredMixin, DetailView):
         user = self.request.user
         course = self.object
         
-        # Check if user is enrolled or blocked
         enrollment = None
         is_blocked = False
         if not user.is_teacher:
-            # First check for blocked enrollment
             blocked_enrollment = Enrollment.objects.filter(
                 student=user, course=course, is_blocked=True
             ).first()
             if blocked_enrollment:
                 is_blocked = True
             else:
-                # Check for active enrollment
                 enrollment = Enrollment.objects.filter(
                     student=user, course=course, is_active=True
                 ).first()
@@ -84,7 +80,6 @@ class CourseDetailView(LoginRequiredMixin, DetailView):
             enrollment__course=course
         ).select_related('enrollment__student')
         
-        # Check if student can leave or edit feedback
         if enrollment:
             existing_feedback = getattr(enrollment, 'feedback', None)
             if existing_feedback:
@@ -198,7 +193,6 @@ def leave_feedback(request, pk):
         Enrollment, student=request.user, course=course, is_active=True
     )
     
-    # Check if user already has feedback (for editing)
     existing_feedback = getattr(enrollment, 'feedback', None)
     
     if request.method == 'POST':

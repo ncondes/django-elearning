@@ -21,7 +21,6 @@ class UserRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Add placeholders and remove help text (errors shown on submit)
         placeholders = {
             'username': 'Choose a username',
             'email': 'your.email@example.com',
@@ -36,9 +35,7 @@ class UserRegistrationForm(UserCreationForm):
                 field.widget.attrs['class'] = 'form-control'
                 if field_name in placeholders:
                     field.widget.attrs['placeholder'] = placeholders[field_name]
-                # Remove help text - errors will show on invalid submit
                 field.help_text = ''
-                # Remove HTML5 required - use server-side validation only
                 field.widget.attrs['required'] = False
 
 

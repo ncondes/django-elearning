@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import Http404, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
-from apps.chat.models import ChatRoom, ChatMessage, OnlineUser
+from apps.chat.models import ChatRoom, ChatMessage
 from apps.courses.models import Course, Enrollment
 
 
@@ -12,8 +12,6 @@ from apps.courses.models import Course, Enrollment
 def chat_room(request, course_pk):
     """View for course chat room."""
     course = get_object_or_404(Course, pk=course_pk)
-    
-    # Check access
     user = request.user
     has_access = False
     
@@ -31,14 +29,11 @@ def chat_room(request, course_pk):
         messages.error(request, 'You do not have access to this chat room.')
         return redirect('courses:course_detail', pk=course_pk)
     
-    # Get or create chat room
     chat_room, created = ChatRoom.objects.get_or_create(course=course)
     
-    # Get recent messages
     recent_messages = ChatMessage.objects.filter(room=chat_room).select_related('user').order_by('-created_at')[:50]
     recent_messages = list(reversed(recent_messages))
     
-    # Get online users
     online_users = chat_room.online_users.select_related('user').all()
     
     context = {
@@ -102,7 +97,6 @@ def get_chat_messages(request, room_id):
     except ChatRoom.DoesNotExist:
         return JsonResponse({'error': 'Room not found'}, status=404)
     
-    # Check access
     user = request.user
     course = room.course
     has_access = False
@@ -120,7 +114,6 @@ def get_chat_messages(request, room_id):
     if not has_access:
         return JsonResponse({'error': 'Access denied'}, status=403)
     
-    # Get recent messages
     messages_qs = ChatMessage.objects.filter(room=room).select_related('user').order_by('-created_at')[:50]
     messages_list = [
         {
@@ -134,7 +127,6 @@ def get_chat_messages(request, room_id):
         for msg in reversed(messages_qs)
     ]
     
-    # Get online users
     online_users = [
         {
             'user_id': ou.user.id,

@@ -22,9 +22,6 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         
-        # Check if the object has a user attribute
         if hasattr(obj, 'user'):
             return obj.user == request.user
-        
-        # Check if the object is a user
         return obj == request.user
