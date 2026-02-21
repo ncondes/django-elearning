@@ -237,6 +237,20 @@ document.addEventListener('DOMContentLoaded', function() {
             clearValidation(this);
         });
     });
+    
+    // Clear server-side errors on input (when user starts typing)
+    [username, email, password1, password2].forEach(function(input) {
+        input.addEventListener('input', function() {
+            // Remove server-side error list if present
+            const parent = this.closest('.mb-3');
+            const errorList = parent ? parent.querySelector('.errorlist') : null;
+            if (errorList) {
+                errorList.remove();
+            }
+            // Clear invalid state while typing
+            this.classList.remove('is-invalid');
+        });
+    });
 });
 </script>
 {% endblock %}
